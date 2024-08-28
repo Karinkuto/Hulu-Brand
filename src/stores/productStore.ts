@@ -1,4 +1,4 @@
-import create from 'zustand';
+import create from "zustand";
 
 interface Variant {
   sku: string;
@@ -44,18 +44,29 @@ export const useProductStore = create<ProductState>((set, get) => ({
   featuredProducts: [],
   trendingProducts: [],
   sales: [],
-  addProduct: (product) =>
-    set((state) => ({
-      products: [...state.products, {
-        ...product,
-        category: product.category || 'Uncategorized',
-        variants: product.variants.map(v => ({
-          ...v,
-          stock: parseInt(v.stock.toString(), 10) || 0,
-          price: parseFloat(v.price.toString()) || 0,
-        })),
-      }]
-    })),
+  addProduct: (product) => {
+    console.log("Adding product:", product);
+    set((state) => {
+      const newState = {
+        products: [
+          ...state.products,
+          {
+            ...product,
+            category: product.category || "Uncategorized",
+            image: product.image || "", // Ensure this can be an empty string
+            variants: product.variants.map((v) => ({
+              ...v,
+              stock: parseInt(v.stock.toString(), 10) || 0,
+              price: parseFloat(v.price.toString()) || 0,
+            })),
+          },
+        ],
+      };
+      console.log("New state:", newState);
+      return newState;
+    });
+    console.log("State after update:", useProductStore.getState().products);
+  },
   updateProduct: (id, updates) =>
     set((state) => ({
       products: state.products.map((p) =>
@@ -68,7 +79,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
     })),
   addSale: (productId, variantSku, quantity) => {
     set((state) => ({
-      sales: [...state.sales, { productId, variantSku, quantity, date: new Date() }],
+      sales: [
+        ...state.sales,
+        { productId, variantSku, quantity, date: new Date() },
+      ],
     }));
   },
   getTrendingProducts: () => {
