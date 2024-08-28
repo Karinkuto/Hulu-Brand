@@ -1,0 +1,114 @@
+.homePage {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  padding: 2rem 0;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+/* Hero Section */
+.heroContent {
+  text-align: center;
+  z-index: 10;
+}
+
+/* Bento Grid */
+.bentoGrid {
+  margin-top: 4rem;
+}
+
+.bentoContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 1rem;
+  height: 600px;
+}
+
+.bentoItem {
+  background-color: var(--background);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.bentoItem:hover {
+  transform: translateY(-5px);
+}
+
+.bentoItem1 {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.bentoItem2, .bentoItem3 {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+.bentoItem4 {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+/* Trending Section */
+.trendingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Categories Showcase */
+.categoriesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.categoryCard {
+  background-color: var(--accent);
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.categoryCard:hover {
+  transform: translateY(-5px);
+}
+
+.categoryCard h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* New Arrivals Carousel */
+.arrivalsCarousel {
+  /* Implement carousel styles */
+}
+
+/* Customer Favorites */
+.favoritesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .bentoContainer {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .bentoItem {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+  }
+}
