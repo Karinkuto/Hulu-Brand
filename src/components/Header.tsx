@@ -33,8 +33,6 @@ export default function Header() {
   const { isAuthenticated, isAdmin, logout, user } = useAuthStore();
   const location = useLocation();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  // Remove the searchRef as it's no longer needed
-  // const searchRef = useRef<HTMLDivElement>(null);
 
   const mainDockItems = [
     { key: "home", icon: HomeIcon, to: "/", tooltip: "Home" },
@@ -85,23 +83,6 @@ export default function Header() {
 
   console.log("Header render:", { isAdmin, isAuthenticated, user, adminDockItems, userDockItems });
 
-  // Remove the useEffect hook for handling clicks outside the search bar
-  // useEffect(() => {
-  //   function handleClickOutside(event: MouseEvent) {
-  //     if (
-  //       searchRef.current &&
-  //       !searchRef.current.contains(event.target as Node)
-  //     ) {
-  //       setIsSearchExpanded(false);
-  //     }
-  //   }
-
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleClickOutside);
-  //   };
-  // }, []);
-
   const isActive = (path: string) => location.pathname === path;
 
   const getLinkClassName = (to: string) => {
@@ -142,31 +123,8 @@ export default function Header() {
                       </Tooltip>
                     </DockIcon>
                   ))}
-                  <Separator orientation="vertical" className="mx-2 h-6" />
-                  {utilityDockItems.map(
-                    ({ key, icon: Icon, tooltip }) => (
-                      <DockIcon key={key}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-10 rounded-full"
-                            >
-                              <Icon className="size-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{tooltip}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </DockIcon>
-                    )
-                  )}
-                  <DockIcon>
-                    <ModeToggle />
-                  </DockIcon>
                   
+                  {/* Move search icon and bar here */}
                   <DockIcon>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -204,28 +162,35 @@ export default function Header() {
                     )}
                   </AnimatePresence>
 
+                  <Separator orientation="vertical" className="mx-2 h-6" />
+                  {utilityDockItems.map(
+                    ({ key, icon: Icon, tooltip }) => (
+                      <DockIcon key={key}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-10 rounded-full"
+                            >
+                              <Icon className="size-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{tooltip}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </DockIcon>
+                    )
+                  )}
+                  
+                  {/* Keep only one ModeToggle */}
                   <DockIcon>
                     <ModeToggle />
                   </DockIcon>
                 </Dock>
               </TooltipProvider>
             </motion.div>
-
-            {/* Remove the old AnimatePresence block for search */}
-            {/* <AnimatePresence>
-              {isSearchExpanded && (
-                <motion.div
-                  ref={searchRef}
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: "auto", opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <Input type="text" placeholder="Search..." className="w-64" />
-                </motion.div>
-              )}
-            </AnimatePresence> */}
 
             <AnimatePresence mode="popLayout">
               {isAuthenticated && (
