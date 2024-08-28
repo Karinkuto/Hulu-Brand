@@ -33,23 +33,8 @@ export default function Header() {
   const { isAuthenticated, isAdmin, logout, user } = useAuthStore();
   const location = useLocation();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(event.target as Node)
-      ) {
-        setIsSearchExpanded(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  // Remove the searchRef as it's no longer needed
+  // const searchRef = useRef<HTMLDivElement>(null);
 
   const mainDockItems = [
     { key: "home", icon: HomeIcon, to: "/", tooltip: "Home" },
@@ -89,26 +74,33 @@ export default function Header() {
 
   const userDockItems = isAuthenticated
     ? [
-        {
-          key: "user",
-          icon: UserIcon,
-          tooltip: isAdmin
-            ? `Admin: ${user?.username}`
-            : `User: ${user?.username}`,
-        },
+        ...(isAdmin ? adminDockItems : []),
       ]
     : [];
 
   const utilityDockItems = [
-    {
-      key: "search",
-      icon: Search,
-      tooltip: "Search",
-      onClick: () => setIsSearchExpanded(!isSearchExpanded),
-    },
     { key: "cart", icon: ShoppingCart, tooltip: "Cart" },
     { key: "notifications", icon: Bell, tooltip: "Notifications" },
   ];
+
+  console.log("Header render:", { isAdmin, isAuthenticated, user, adminDockItems, userDockItems });
+
+  // Remove the useEffect hook for handling clicks outside the search bar
+  // useEffect(() => {
+  //   function handleClickOutside(event: MouseEvent) {
+  //     if (
+  //       searchRef.current &&
+  //       !searchRef.current.contains(event.target as Node)
+  //     ) {
+  //       setIsSearchExpanded(false);
+  //     }
+  //   }
+
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, []);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -150,30 +142,15 @@ export default function Header() {
                       </Tooltip>
                     </DockIcon>
                   ))}
-                  {adminDockItems.map(({ key, icon: Icon, to, tooltip }) => (
-                    <DockIcon key={key}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Link to={to} className={getLinkClassName(to)}>
-                            <Icon className="size-4" />
-                          </Link>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{tooltip}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </DockIcon>
-                  ))}
                   <Separator orientation="vertical" className="mx-2 h-6" />
                   {utilityDockItems.map(
-                    ({ key, icon: Icon, tooltip, onClick }) => (
+                    ({ key, icon: Icon, tooltip }) => (
                       <DockIcon key={key}>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={onClick}
                               className="size-10 rounded-full"
                             >
                               <Icon className="size-4" />
@@ -189,11 +166,53 @@ export default function Header() {
                   <DockIcon>
                     <ModeToggle />
                   </DockIcon>
+                  
+                  <DockIcon>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+                          className="size-10 rounded-full"
+                        >
+                          <Search className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Search</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </DockIcon>
+                  
+                  <AnimatePresence>
+                    {isSearchExpanded && (
+                      <motion.div
+                        layout
+                        initial={{ width: 0, opacity: 0 }}
+                        animate={{ width: 'auto', opacity: 1 }}
+                        exit={{ width: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                      >
+                        <Input 
+                          type="text" 
+                          placeholder="Search..." 
+                          className="w-64 rounded-lg" 
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <DockIcon>
+                    <ModeToggle />
+                  </DockIcon>
                 </Dock>
               </TooltipProvider>
             </motion.div>
 
-            <AnimatePresence>
+            {/* Remove the old AnimatePresence block for search */}
+            {/* <AnimatePresence>
               {isSearchExpanded && (
                 <motion.div
                   ref={searchRef}
@@ -206,7 +225,7 @@ export default function Header() {
                   <Input type="text" placeholder="Search..." className="w-64" />
                 </motion.div>
               )}
-            </AnimatePresence>
+            </AnimatePresence> */}
 
             <AnimatePresence mode="popLayout">
               {isAuthenticated && (
@@ -223,26 +242,13 @@ export default function Header() {
                 >
                   <TooltipProvider>
                     <Dock direction="middle" className="w-auto">
-                      {user?.username && (
-                        <p className="text-sm font-medium whitespace-nowrap px-2">
-                          {user.username}
-                        </p>
-                      )}
-                      {userDockItems.map(({ key, icon: Icon, tooltip }) => (
+                      {userDockItems.map(({ key, icon: Icon, to, tooltip }) => (
                         <DockIcon key={key}>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <button
-                                className={cn(
-                                  buttonVariants({
-                                    variant: "ghost",
-                                    size: "icon",
-                                  }),
-                                  "size-10 rounded-full"
-                                )}
-                              >
+                              <Link to={to} className={getLinkClassName(to)}>
                                 <Icon className="size-4" />
-                              </button>
+                              </Link>
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>{tooltip}</p>
@@ -250,6 +256,33 @@ export default function Header() {
                           </Tooltip>
                         </DockIcon>
                       ))}
+                      <Separator orientation="vertical" className="mx-2 h-6" />
+                      <DockIcon>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              className={cn(
+                                buttonVariants({
+                                  variant: "ghost",
+                                  size: "icon",
+                                }),
+                                "size-10 rounded-full"
+                              )}
+                            >
+                              <UserIcon className="size-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{isAdmin ? `Admin: ${user?.username}` : `User: ${user?.username}`}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </DockIcon>
+                      {user?.username && (
+                        <p className="text-sm font-medium whitespace-nowrap px-2">
+                          {user.username}
+                        </p>
+                      )}
+                      <Separator orientation="vertical" className="mx-2 h-6" />
                       <DockIcon>
                         <Tooltip>
                           <TooltipTrigger asChild>
