@@ -3,43 +3,76 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Button } from '../components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast"
 import React from 'react';
-import { FaFlag } from 'react-icons/fa'; // Import the flag icon
 
 export default function AuthPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { login, register } = useAuthStore();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [error, setError] = useState('');
+  const { login, register, checkUsernameExists } = useAuthStore();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
       await login(username, password);
-      navigate('/'); // This is correct, redirecting to home page after login
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      })
+      navigate('/');
     } catch (error) {
-      console.error('Login failed:', error);
-      // Consider adding user feedback for failed login attempts
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "Please check your credentials and try again.",
+      })
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (password !== confirmPassword) {
-      console.error('Passwords do not match');
-      // Consider adding user feedback for password mismatch
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: "Passwords do not match.",
+      })
       return;
     }
     try {
-      await register(username, password);
-      navigate('/'); // This is correct, redirecting to home page after registration
+      const usernameExists = await checkUsernameExists(username);
+      if (usernameExists) {
+        toast({
+          variant: "destructive",
+          title: "Registration Failed",
+          description: "Username already exists. Please choose a different one.",
+        })
+        return;
+      }
+      await register(username, password, firstName, lastName, phone);
+      toast({
+        title: "Registration Successful",
+        description: "Welcome to our platform!",
+      })
+      navigate('/');
     } catch (error) {
-      console.error('Registration failed:', error);
-      // Consider adding user feedback for failed registration attempts
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: "An error occurred. Please try again.",
+      })
     }
   };
 
@@ -50,6 +83,7 @@ export default function AuthPage() {
           <TabsTrigger value="login">Login</TabsTrigger>
           <TabsTrigger value="register">Register</TabsTrigger>
         </TabsList>
+        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
         <TabsContent value="login">
           <Card className="mx-auto max-w-sm">
             <CardHeader>
@@ -65,31 +99,31 @@ export default function AuthPage() {
                     <Label htmlFor="username">Username</Label>
                     <Input
                       id="username"
-                      type="text"
+            type="text"
                       placeholder="Enter your username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
-                    />
-                  </div>
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </div>
                   <div className="grid gap-2">
                     <div className="flex items-center">
                       <Label htmlFor="password">Password</Label>
-                      <Link href="#" className="ml-auto inline-block text-sm underline">
+                      <Link to="#" className="ml-auto inline-block text-sm underline">
                         Forgot your password?
                       </Link>
                     </div>
                     <Input
                       id="password"
-                      type="password"
+            type="password"
                       placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
                   <Button type="submit" className="w-full">
-                    Login
+          Login
                   </Button>
                 </div>
               </form>
@@ -110,11 +144,23 @@ export default function AuthPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                       <Label htmlFor="first-name">First name</Label>
-                      <Input id="first-name" placeholder="Abebe" required />
+                      <Input 
+                        id="first-name" 
+                        placeholder="Abebe" 
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required 
+                      />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="last-name">Last name</Label>
-                      <Input id="last-name" placeholder="Kebede" required />
+                      <Input 
+                        id="last-name" 
+                        placeholder="Kebede" 
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required 
+                      />
                     </div>
                   </div>
                   <div className="grid gap-2">
@@ -129,19 +175,32 @@ export default function AuthPage() {
                         type="tel"
                         placeholder="912345678"
                         className="rounded-l-none"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
                         required
                       />
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="register-username">Username</Label>
                     <Input 
-                      id="password" 
+                      id="register-username" 
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required 
+                      placeholder="Choose a username"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="register-password">Password</Label>
+                    <Input 
+                      id="register-password" 
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required 
-                      placeholder="Create a password" // Added placeholder for registration password
+                      placeholder="Create a password"
                     />
                   </div>
                   <div className="grid gap-2">
@@ -152,15 +211,14 @@ export default function AuthPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required 
-                      placeholder="Re-enter your password" // Updated placeholder for clarity
+                      placeholder="Re-enter your password"
                     />
                   </div>
                   <Button type="submit" className="w-full">
                     Create an account
                   </Button>
                 </div>
-              </form>
-              {/* Removed "Already have an account" text and link */}
+      </form>
             </CardContent>
           </Card>
         </TabsContent>
