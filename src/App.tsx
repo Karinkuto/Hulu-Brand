@@ -11,25 +11,31 @@ import AdminProducts from './pages/admin/Products';
 import AdminOrders from './pages/admin/Orders';
 import AuthPage from './pages/AuthPage';
 import { useAuthStore } from './stores/authStore';
+import UsersPage from './pages/UsersPage';
+import { Cart } from './components/Cart'; // Add this import
+import { Notifications } from './components/Notifications'; // Add this import
 
 export default function App() {
   const { isAuthenticated, isAdmin } = useAuthStore();
 
   return (
     <Router>
+      <Header />
       <div className="flex flex-col min-h-screen bg-background text-foreground">
-        <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/product/:id" element={<ProductDetailsPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/cart" element={<Cart />} /> {/* Add this route */}
+            <Route path="/notifications" element={<Notifications />} /> {/* Add this route */}
             {isAuthenticated && isAdmin && (
               <>
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/products" element={<AdminProducts />} />
                 <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/users" element={<UsersPage />} />
               </>
             )}
           </Routes>

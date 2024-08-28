@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { Dock, DockIcon } from "@/components/magicui/dock";
 import {
@@ -20,6 +20,7 @@ import {
   Search,
   ShoppingCart,
   Bell,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -28,10 +29,12 @@ import { ModeToggle } from "./mode-toggle";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useCartStore } from "../stores/cartStore";
 
 export default function Header() {
   const { isAuthenticated, isAdmin, logout, user } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
   const mainDockItems = [
@@ -67,6 +70,12 @@ export default function Header() {
           to: "/admin/orders",
           tooltip: "Orders",
         },
+        {
+          key: "users",
+          icon: Users,
+          to: "/admin/users",
+          tooltip: "Manage Users",
+        },
       ]
     : [];
 
@@ -77,9 +86,11 @@ export default function Header() {
     : [];
 
   const utilityDockItems = [
-    { key: "cart", icon: ShoppingCart, tooltip: "Cart" },
-    { key: "notifications", icon: Bell, tooltip: "Notifications" },
+    { key: "cart", icon: ShoppingCart, tooltip: "Cart", to: "/cart" },
+    { key: "notifications", icon: Bell, tooltip: "Notifications", to: "/notifications" },
   ];
+
+  const cartItemsCount = useCartStore((state) => state.items.reduce((sum, item) => sum + item.quantity, 0));
 
   console.log("Header render:", { isAdmin, isAuthenticated, user, adminDockItems, userDockItems });
 
@@ -164,16 +175,22 @@ export default function Header() {
 
                   <Separator orientation="vertical" className="mx-2 h-6" />
                   {utilityDockItems.map(
-                    ({ key, icon: Icon, tooltip }) => (
+                    ({ key, icon: Icon, tooltip, to }) => (
                       <DockIcon key={key}>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="size-10 rounded-full"
+                              className="size-10 rounded-full relative"
+                              onClick={() => navigate(to)}
                             >
                               <Icon className="size-4" />
+                              {key === "cart" && cartItemsCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                  {cartItemsCount}
+                                </span>
+                              )}
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>

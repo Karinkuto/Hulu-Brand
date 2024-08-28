@@ -139,6 +139,7 @@ export default function AddProductForm() {
       })),
     };
     addProduct(newProduct);
+    console.log("Product added, current store state:", useProductStore.getState().products);
     // Reset form or close dialog
   };
 
