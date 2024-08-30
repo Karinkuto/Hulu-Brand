@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { DialogClose } from "@/components/ui/dialog";
 import { useDropzone } from 'react-dropzone';
 import { PlusCircle, X, ChevronDown, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,7 +14,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from '@/utils/currencyFormatter';
+import { Upload } from "lucide-react"
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
+// Reuse these from AddProductForm
 const clothingCategories = [
   { value: "tops", label: "Tops" },
   { value: "bottoms", label: "Bottoms" },
@@ -37,6 +39,7 @@ const clothingColors = [
 
 const standardSizes = ["XS", "S", "M", "L", "XL", "XXL"];
 
+// Reuse ComboboxSelect from AddProductForm
 const ComboboxSelect = ({ options, value, onChange, placeholder }) => {
   const [open, setOpen] = React.useState(false);
 
@@ -87,23 +90,19 @@ const ComboboxSelect = ({ options, value, onChange, placeholder }) => {
   );
 };
 
-export default function AddProductForm() {
-  const { addProduct } = useProductStore();
+export default function EditProductForm({ product, onClose }) {
+  const { updateProduct } = useProductStore();
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    image: "",
-    category: "",
-    status: "",
-    variants: [{
-      stock: "",
-      price: "",
-      size: "",
-      color: "",
-      material: ""
-    }],
+    name: product.name,
+    description: product.description,
+    coverImage: product.coverImage || "",
+    category: product.category,
+    status: product.status,
+    variants: product.variants.map(v => ({
+      ...v,
+      images: v.images || []
+    })),
   });
-  const [previewImages, setPreviewImages] = useState<string[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -114,34 +113,44 @@ export default function AddProductForm() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newPreviews = acceptedFiles.map(file => URL.createObjectURL(file));
-    setPreviewImages(prev => [...prev, ...newPreviews]);
-    // In a real scenario, you'd handle file uploads to a server here
-  }, []);
+  const handleCoverImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setFormData(prev => ({ ...prev, coverImage: imageUrl }));
+    }
+  };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
-    onDrop,
-    accept: {'image/*': []},
-    multiple: true
-  });
+  const handleVariantImageUpload = (variantIndex: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      const newImages = Array.from(files).map(file => URL.createObjectURL(file));
+      const newVariants = [...formData.variants];
+      newVariants[variantIndex].images = [...(newVariants[variantIndex].images || []), ...newImages];
+      setFormData(prev => ({ ...prev, variants: newVariants }));
+    }
+  };
+
+  const removeVariantImage = (variantIndex: number, imageIndex: number) => {
+    const newVariants = [...formData.variants];
+    newVariants[variantIndex].images = newVariants[variantIndex].images.filter((_, i) => i !== imageIndex);
+    setFormData(prev => ({ ...prev, variants: newVariants }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newProduct = {
+    const updatedProduct = {
+      ...product,
       ...formData,
-      id: Date.now().toString(),
-      image: previewImages[0] || "",
       variants: formData.variants.map(v => ({
         ...v,
-        sku: generateSKU(formData, v),
-        stock: parseInt(v.stock, 10) || 0, // Allow zero stock
-        price: parseFloat(v.price) || 0,
+        sku: v.sku || generateSKU(formData, v),
+        stock: parseInt(v.stock.toString(), 10) || 0,
+        price: parseFloat(v.price.toString()) || 0,
       })),
     };
-    addProduct(newProduct);
-    console.log("Product added, current store state:", useProductStore.getState().products);
-    // Reset form or close dialog
+    updateProduct(product.id, updatedProduct);
+    onClose();
   };
 
   const addVariant = () => {
@@ -152,7 +161,8 @@ export default function AddProductForm() {
         price: "",
         size: "",
         color: "",
-        material: ""
+        material: "",
+        images: []
       }]
     }));
   };
@@ -232,33 +242,49 @@ export default function AddProductForm() {
                     </div>
                   </div>
                 </div>
-                <div>
-                  <Label>Product Images</Label>
-                  <div {...getRootProps()} className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center cursor-pointer mt-1">
-                    <input {...getInputProps()} />
-                    {isDragActive ? (
-                      <p>Drop the images here ...</p>
-                    ) : (
-                      <p>Drag 'n' drop images here, or click to select files</p>
-                    )}
-                  </div>
-                  {previewImages.length > 0 && (
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                      {previewImages.map((img, index) => (
-                        <div key={index} className="relative aspect-square">
-                          <img src={img} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded" />
-                          <button
-                            type="button"
-                            onClick={() => setPreviewImages(prev => prev.filter((_, i) => i !== index))}
-                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
-                          >
-                            <X size={12} />
-                          </button>
+                <Card className="overflow-hidden">
+                  <CardHeader>
+                    <CardTitle>Product Images</CardTitle>
+                    <CardDescription>
+                      Upload a cover image and variant images
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4">
+                      <div>
+                        <Label>Cover Image</Label>
+                        <div className="mt-2 relative">
+                          {formData.coverImage ? (
+                            <div className="relative aspect-video w-full">
+                              <img
+                                src={formData.coverImage}
+                                alt="Cover image"
+                                className="w-full h-full object-cover rounded-md"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, coverImage: "" }))}
+                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="flex aspect-video w-full items-center justify-center rounded-md border border-dashed cursor-pointer">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="sr-only"
+                                onChange={handleCoverImageUpload}
+                              />
+                              <Upload className="h-8 w-8 text-muted-foreground" />
+                            </label>
+                          )}
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  )}
-                </div>
+                  </CardContent>
+                </Card>
               </div>
             </CardContent>
           </Card>
@@ -302,7 +328,6 @@ export default function AddProductForm() {
                         <Input
                           id={`stock-${index}`}
                           type="number"
-                          min="0" // Allow zero stock
                           value={variant.stock}
                           onChange={(e) => updateVariant(index, "stock", e.target.value)}
                           required
@@ -319,7 +344,7 @@ export default function AddProductForm() {
                           required
                         />
                         <p className="text-sm text-gray-500 mt-1">
-                          {formatCurrency(parseFloat(variant.price) || 0)}
+                          {formatCurrency(parseFloat(variant.price.toString()) || 0)}
                         </p>
                       </div>
                       <div>
@@ -341,6 +366,37 @@ export default function AddProductForm() {
                         />
                       </div>
                     </div>
+                    <div>
+                      <Label>Variant Images</Label>
+                      <div className="grid grid-cols-4 gap-2 mt-2">
+                        {variant.images?.map((img, imgIndex) => (
+                          <div key={imgIndex} className="relative aspect-square">
+                            <img
+                              src={img}
+                              alt={`Variant image ${imgIndex + 1}`}
+                              className="w-full h-full object-cover rounded-md"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeVariantImage(index, imgIndex)}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))}
+                        <label className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="sr-only"
+                            onChange={(e) => handleVariantImageUpload(index, e)}
+                          />
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 ))}
                 <Button type="button" onClick={addVariant} variant="outline">
@@ -354,10 +410,8 @@ export default function AddProductForm() {
 
       <div className="sticky bottom-0 bg-background pt-6 pb-2">
         <div className="flex justify-end space-x-2">
-          <DialogClose asChild>
-            <Button type="button" variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button type="submit">Add Product</Button>
+          <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+          <Button type="submit">Update Product</Button>
         </div>
       </div>
     </form>

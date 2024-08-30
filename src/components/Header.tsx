@@ -17,10 +17,11 @@ import {
   LayoutDashboardIcon,
   PackageIcon,
   ClipboardListIcon,
-  Search,
-  ShoppingCart,
   Bell,
   Users,
+  Filter,
+  CreditCard,
+  ShoppingCart, // Add this import
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -30,12 +31,30 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCartStore } from "../stores/cartStore";
+import { useProductStore } from "../stores/productStore";
+import { FilterMenu } from "./FilterMenu";
+import { Container } from "@mui/material";
 
 export default function Header() {
   const { isAuthenticated, isAdmin, logout, user } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const { searchTerm, setSearchTerm } = useProductStore();
+  const searchInputRef = useRef(null);
+
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (location.pathname === '/products') {
+      setIsSearchExpanded(true);
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      }
+    } else {
+      setIsSearchExpanded(false);
+    }
+  }, [location]);
 
   const mainDockItems = [
     { key: "home", icon: HomeIcon, to: "/", tooltip: "Home" },
@@ -45,6 +64,11 @@ export default function Header() {
       to: "/products",
       tooltip: "Products",
     },
+  ];
+
+  const utilityDockItems = [
+    { key: "cart", icon: ShoppingCart, tooltip: "Cart", to: "/cart" },
+    { key: "notifications", icon: Bell, tooltip: "Notifications", to: "/notifications" },
     ...(!isAuthenticated
       ? [{ key: "login", icon: LogInIcon, to: "/auth", tooltip: "Login" }]
       : []),
@@ -71,6 +95,12 @@ export default function Header() {
           tooltip: "Orders",
         },
         {
+          key: "transactions",
+          icon: CreditCard,
+          to: "/transactions",
+          tooltip: "Transactions",
+        },
+        {
           key: "users",
           icon: Users,
           to: "/admin/users",
@@ -79,16 +109,15 @@ export default function Header() {
       ]
     : [];
 
+  console.log("Admin dock items:", adminDockItems);
+
   const userDockItems = isAuthenticated
     ? [
         ...(isAdmin ? adminDockItems : []),
       ]
     : [];
 
-  const utilityDockItems = [
-    { key: "cart", icon: ShoppingCart, tooltip: "Cart", to: "/cart" },
-    { key: "notifications", icon: Bell, tooltip: "Notifications", to: "/notifications" },
-  ];
+  console.log("User dock items:", userDockItems);
 
   const cartItemsCount = useCartStore((state) => state.items.reduce((sum, item) => sum + item.quantity, 0));
 
@@ -107,18 +136,27 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-background mb-4">
-      <nav className="container mx-auto px-4 py-2">
-        <LayoutGroup>
-          <div className="flex justify-center items-center gap-4">
-            <motion.div layout>
+    <Container>
+      <header className="fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <nav className={`flex h-14 items-center ${isAuthenticated ? 'justify-between' : 'justify-center'} px-4 pt-5`}>
+          <LayoutGroup>
+            <div className={`flex items-center space-x-4 ${isAuthenticated ? '' : 'w-full justify-center'}`}>
               <TooltipProvider>
                 <Dock direction="middle" className="w-auto">
                   <Link
                     to="/"
                     className="text-xl font-bold text-primary px-2 flex items-end"
                   >
-                    Hulu <span className="font-light">Brand</span>
+                    {isAuthenticated ? (
+                      <span className="flex items-end" style={{ letterSpacing: '-0.35em' }}>
+                        <span className="font-bold">H</span>
+                        <span className="font-light">B</span>
+                      </span>
+                    ) : (
+                      <>
+                        Hulu <span className="font-light">Brand</span>
+                      </>
+                    )}
                   </Link>
                   {mainDockItems.map(({ key, icon: Icon, to, tooltip }) => (
                     <DockIcon key={key}>
@@ -135,25 +173,6 @@ export default function Header() {
                     </DockIcon>
                   ))}
                   
-                  {/* Move search icon and bar here */}
-                  <DockIcon>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setIsSearchExpanded(!isSearchExpanded)}
-                          className="size-10 rounded-full"
-                        >
-                          <Search className="size-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Search</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </DockIcon>
-                  
                   <AnimatePresence>
                     {isSearchExpanded && (
                       <motion.div
@@ -162,13 +181,28 @@ export default function Header() {
                         animate={{ width: 'auto', opacity: 1 }}
                         exit={{ width: 0, opacity: 0 }}
                         transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="overflow-hidden"
+                        className="overflow-hidden flex items-center"
                       >
-                        <Input 
-                          type="text" 
-                          placeholder="Search..." 
-                          className="w-64 rounded-lg" 
-                        />
+                        <div className="relative flex items-center">
+                          <Input 
+                            ref={searchInputRef}
+                            type="text" 
+                            placeholder="Search..." 
+                            className="w-64 pr-10 rounded-lg focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                          <div className="absolute right-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => setIsFilterMenuOpen(true)}
+                            >
+                              <Filter className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -201,13 +235,12 @@ export default function Header() {
                     )
                   )}
                   
-                  {/* Keep only one ModeToggle */}
                   <DockIcon>
                     <ModeToggle />
                   </DockIcon>
                 </Dock>
               </TooltipProvider>
-            </motion.div>
+            </div>
 
             <AnimatePresence mode="popLayout">
               {isAuthenticated && (
@@ -221,6 +254,7 @@ export default function Header() {
                     duration: 0.3,
                     layout: { duration: 0.3 },
                   }}
+                  className="ml-auto"
                 >
                   <TooltipProvider>
                     <Dock direction="middle" className="w-auto">
@@ -291,9 +325,15 @@ export default function Header() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
-        </LayoutGroup>
-      </nav>
-    </header>
+          </LayoutGroup>
+        </nav>
+        
+        <FilterMenu
+          isOpen={isFilterMenuOpen}
+          onOpenChange={setIsFilterMenuOpen}
+        />
+      </header>
+      <div className="h-[calc(56px+1.25rem)]"></div> {/* Spacer div */}
+    </Container>
   );
 }

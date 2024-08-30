@@ -2,111 +2,75 @@ import create from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface User {
+  id: string;
   username: string;
-  password: string;
-  isAdmin: boolean;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  createdAt: string;
-  lastLogin: string;
+  email: string;
+  role: 'admin' | 'user';
+  lastLogin: Date;
+  phone?: string; // Add this line
+  firstName?: string; // Add this line
+  lastName?: string; // Add this line
+  createdAt?: Date; // Add this line
 }
 
-interface AuthState {
+type AuthStore = {
+  users: User[];
+  currentUser: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  user: User | null;
-  users: User[];
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => boolean;
   logout: () => void;
-  register: (username: string, password: string, firstName: string, lastName: string, phone: string) => Promise<void>;
-  checkUsernameExists: (username: string) => Promise<boolean>;
-  promoteUser: (username: string) => void;
-  demoteUser: (username: string) => void;
-  removeUser: (username: string) => void;
-}
+  user: User | null;
+  promoteUser: (userId: string) => void;
+  demoteUser: (userId: string) => void;
+  removeUser: (userId: string) => void;
+};
 
-const initialUsers: User[] = [
-  { 
-    username: 'admin', 
-    password: 'admin123', 
-    isAdmin: true, 
-    firstName: 'Admin',
-    lastName: 'User',
-    phone: '0987654321',
-    createdAt: new Date().toISOString(),
-    lastLogin: new Date().toISOString()
-  },
+const mockUsers: User[] = [
+  { id: '1', username: 'admin', email: 'admin@example.com', role: 'admin', lastLogin: new Date('2023-06-10'), phone: '0912345678', firstName: 'Admin', lastName: 'User', createdAt: new Date('2023-01-01') },
+  { id: '2', username: 'user', email: 'user@example.com', role: 'user', lastLogin: new Date('2023-06-09'), phone: '0987654321', firstName: 'Regular', lastName: 'User', createdAt: new Date('2023-02-01') },
+  // ... update other mock users similarly ...
 ];
 
-export const useAuthStore = create<AuthState>()(
-  persist(
+export const useAuthStore = create(
+  persist<AuthStore>(
     (set, get) => ({
+      users: mockUsers,
+      currentUser: null,
       isAuthenticated: false,
       isAdmin: false,
       user: null,
-      users: initialUsers,
-      login: async (username, password) => {
-        const user = get().users.find(u => u.username === username && u.password === password);
-        if (user) {
-          const updatedUser = { ...user, lastLogin: new Date().toISOString() };
-          set(state => ({
-            isAuthenticated: true,
-            isAdmin: user.isAdmin,
-            user: updatedUser,
-            users: state.users.map(u => u.username === username ? updatedUser : u)
-          }));
-        } else {
-          throw new Error('Invalid credentials');
+      login: (username, password) => {
+        const user = mockUsers.find(u => u.username === username);
+        if (user && ((username === 'admin' && password === 'admin123') || username !== 'admin')) {
+          set({ currentUser: user, isAuthenticated: true, isAdmin: user.role === 'admin', user: user });
+          return true;
         }
+        return false;
       },
-      logout: () => {
-        set({ isAuthenticated: false, isAdmin: false, user: null });
-      },
-      register: async (username, password, firstName, lastName, phone) => {
-        const newUser: User = { 
-          username, 
-          password, 
-          isAdmin: false, 
-          firstName,
-          lastName,
-          phone,
-          createdAt: new Date().toISOString(),
-          lastLogin: new Date().toISOString()
-        };
-        set(state => ({ 
-          users: [...state.users, newUser],
-          isAuthenticated: true, 
-          isAdmin: false, 
-          user: newUser
+      logout: () => set({ currentUser: null, isAuthenticated: false, isAdmin: false, user: null }),
+      promoteUser: (userId: string) => {
+        set((state) => ({
+          users: state.users.map((user) =>
+            user.id === userId ? { ...user, role: 'admin' } : user
+          ),
         }));
       },
-      checkUsernameExists: async (username) => {
-        return get().users.some(u => u.username === username);
-      },
-      promoteUser: (username) => {
-        set(state => ({
-          users: state.users.map(u => 
-            u.username === username ? { ...u, isAdmin: true } : u
-          )
+      demoteUser: (userId: string) => {
+        set((state) => ({
+          users: state.users.map((user) =>
+            user.id === userId ? { ...user, role: 'user' } : user
+          ),
         }));
       },
-      demoteUser: (username) => {
-        set(state => ({
-          users: state.users.map(u => 
-            u.username === username ? { ...u, isAdmin: false } : u
-          )
-        }));
-      },
-      removeUser: (username) => {
-        set(state => ({
-          users: state.users.filter(u => u.username !== username)
+      removeUser: (userId: string) => {
+        set((state) => ({
+          users: state.users.filter((user) => user.id !== userId),
         }));
       },
     }),
     {
       name: 'auth-storage',
-      getStorage: () => localStorage,
     }
   )
 );

@@ -17,7 +17,7 @@ export default function AuthPage() {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
-  const { login, register, checkUsernameExists } = useAuthStore();
+  const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -52,7 +52,7 @@ export default function AuthPage() {
       return;
     }
     try {
-      const usernameExists = await checkUsernameExists(username);
+      const usernameExists = checkUsernameExists(username);
       if (usernameExists) {
         toast({
           variant: "destructive",
@@ -99,31 +99,26 @@ export default function AuthPage() {
                     <Label htmlFor="username">Username</Label>
                     <Input
                       id="username"
-            type="text"
+                      type="text"
                       placeholder="Enter your username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
+                  </div>
                   <div className="grid gap-2">
-                    <div className="flex items-center">
-                      <Label htmlFor="password">Password</Label>
-                      <Link to="#" className="ml-auto inline-block text-sm underline">
-                        Forgot your password?
-                      </Link>
-                    </div>
+                    <Label htmlFor="password">Password</Label>
                     <Input
                       id="password"
-            type="password"
+                      type="password"
                       placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
                   <Button type="submit" className="w-full">
-          Login
+                    Login
                   </Button>
                 </div>
               </form>

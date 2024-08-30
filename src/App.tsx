@@ -11,9 +11,10 @@ import AdminProducts from './pages/admin/Products';
 import AdminOrders from './pages/admin/Orders';
 import AuthPage from './pages/AuthPage';
 import { useAuthStore } from './stores/authStore';
-import UsersPage from './pages/UsersPage';
-import { Cart } from './components/Cart'; // Add this import
-import { Notifications } from './components/Notifications'; // Add this import
+import UsersPage from './pages/admin/UsersPage'; // Updated import
+import { Cart } from './components/Cart';
+import { Notifications } from './components/Notifications';
+import TransactionsPage from './pages/TransactionsPage';
 
 export default function App() {
   const { isAuthenticated, isAdmin } = useAuthStore();
@@ -28,14 +29,15 @@ export default function App() {
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/product/:id" element={<ProductDetailsPage />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/cart" element={<Cart />} /> {/* Add this route */}
-            <Route path="/notifications" element={<Notifications />} /> {/* Add this route */}
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/notifications" element={<Notifications />} />
             {isAuthenticated && isAdmin && (
               <>
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/products" element={<AdminProducts />} />
                 <Route path="/admin/orders" element={<AdminOrders />} />
                 <Route path="/admin/users" element={<UsersPage />} />
+                <Route path="/transactions" element={<TransactionsPage />} />
               </>
             )}
           </Routes>

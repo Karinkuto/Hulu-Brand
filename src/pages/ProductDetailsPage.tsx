@@ -1,106 +1,210 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useProductStore } from '../stores/productStore';
-import { useReviewStore } from '../stores/reviewStore';
-import { useAuthStore } from '../stores/authStore';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Container } from '@mui/material';
-import { ReviewForm } from '@/components/ReviewForm';
-import { ReviewList } from '@/components/ReviewList';
+import { useCartStore } from '../stores/cartStore';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, ShoppingCart, CreditCard } from 'lucide-react';
+import { formatCurrency } from '@/utils/currencyFormatter';
+import { Container, Grid, Box, Typography, Divider } from '@mui/material';
+import { ProductCard } from '@/components/ProductCard';
 
 export default function ProductDetailsPage() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { products } = useProductStore();
-  const { getProductReviews, addReview } = useReviewStore();
-  const { user } = useAuthStore();
+  const { addItem } = useCartStore();
   const product = products.find(p => p.id === id);
-  const reviews = getProductReviews(id);
+
+  const [selectedVariant, setSelectedVariant] = useState(product?.variants[0]);
+  const [selectedImage, setSelectedImage] = useState(selectedVariant?.images[0] || '');
+  const [similarProducts, setSimilarProducts] = useState([]);
+
+  useEffect(() => {
+    if (product) {
+      const similar = products
+        .filter(p => p.category === product.category && p.id !== product.id)
+        .slice(0, 4);
+      setSimilarProducts(similar);
+    }
+  }, [product, products]);
 
   if (!product) {
-    return <Container><div>Product not found</div></Container>;
+    return <Container><div className="py-8">Product not found</div></Container>;
   }
 
-  const formatPrice = (price: number | string) => {
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    return isNaN(numPrice) ? 'Price not available' : `$${numPrice.toFixed(2)}`;
+  const handleAddToCart = () => {
+    if (selectedVariant) {
+      addItem({
+        id: `${product.id}-${selectedVariant.sku}`,
+        name: product.name,
+        price: calculateDiscountedPrice(selectedVariant),
+        quantity: 1,
+        imageUrl: selectedVariant.images[0] || product.coverImage,
+      });
+    }
   };
 
-  const similarProducts = products
-    .filter(p => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  const handleBuyNow = () => {
+    handleAddToCart();
+    navigate('/checkout'); // Assuming you have a checkout page
+  };
+
+  const calculateDiscountedPrice = (variant) => {
+    if (variant.discount) {
+      return variant.discountType === 'percentage'
+        ? variant.price * (1 - variant.discount / 100)
+        : variant.price - variant.discount;
+    }
+    return variant.price;
+  };
 
   return (
-    <Container>
-      <div className="py-8">
-        <div className="grid md:grid-cols-2 gap-8">
-          <div>
-            <img src={product.image} alt={product.name} className="w-full h-auto object-cover rounded-lg" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-            <p className="text-gray-600 mb-4">{product.description}</p>
-            <Badge>{product.category}</Badge>
+    <Container maxWidth="lg">
+      <Box py={4}>
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to products
+        </Button>
 
-            <Tabs defaultValue="variants" className="mt-6">
-              <TabsList>
-                <TabsTrigger value="variants">Variants</TabsTrigger>
-                <TabsTrigger value="details">Details</TabsTrigger>
-              </TabsList>
-              <TabsContent value="variants">
-                <div className="space-y-4">
-                  {product.variants.map((variant, index) => (
-                    <Card key={index}>
-                      <CardContent className="flex items-center justify-between p-4">
-                        <div>
-                          <p className="font-semibold">{variant.size}</p>
-                          <p className="text-sm text-gray-500">{variant.color}</p>
-                        </div>
-                        <div>
-                          <p className="font-bold">{formatPrice(variant.price)}</p>
-                          <p className="text-sm text-gray-500">Stock: {variant.stock}</p>
-                        </div>
-                        <Button>Add to Cart</Button>
-                      </CardContent>
-                    </Card>
-                  ))}
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={6}>
+            <img 
+              src={selectedImage} 
+              alt={product.name} 
+              className="w-full h-auto object-cover rounded-lg"
+              style={{ aspectRatio: '1 / 1' }}
+            />
+            <Box mt={2} display="flex" gap={2} overflow="auto">
+              {selectedVariant?.images?.map((img, index) => (
+                <img 
+                  key={index}
+                  src={img} 
+                  alt={`Variant ${index + 1}`} 
+                  className="w-20 h-20 object-cover rounded cursor-pointer"
+                  onClick={() => setSelectedImage(img)}
+                />
+              ))}
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography variant="h4" component="h1" gutterBottom>{product.name}</Typography>
+            <Typography variant="body1" paragraph>{product.description}</Typography>
+            
+            <Divider className="my-6" /> {/* Increased margin for better spacing */}
+            
+            <Typography style={{marginBlock: '1em'}} variant="h6" gutterBottom className="mt-6">Available Variants</Typography> 
+            <Grid container spacing={2}>
+              {product.variants.map((variant, index) => (
+                <Grid item xs={12} sm={6} key={index}>
+                  <Card 
+                    className={`cursor-pointer transition-all ${selectedVariant === variant ? 'border-primary shadow-md' : 'hover:border-gray-300'}`}
+                    onClick={() => {
+                      setSelectedVariant(variant);
+                      setSelectedImage(variant.images[0] || product.coverImage);
+                    }}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <Badge variant="secondary" className="text-xs">
+                          Size: {variant.size}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs flex items-center">
+                          Color: 
+                          <span 
+                            className="w-3 h-3 rounded-full ml-1 inline-block"
+                            style={{backgroundColor: variant.color}}
+                          ></span>
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          Material: {variant.material}
+                        </Badge>
+                      </div>
+                      <Typography variant="h6" gutterBottom>
+                        {formatCurrency(calculateDiscountedPrice(variant))}
+                        {variant.discount && (
+                          <span className="text-red-500 line-through text-sm ml-2">
+                            {formatCurrency(variant.price)}
+                          </span>
+                        )}
+                      </Typography>
+                      {variant.discount && (
+                        <Badge variant="destructive" className="mb-2">
+                          {variant.discountType === 'percentage'
+                            ? `${variant.discount}% OFF`
+                            : `${formatCurrency(variant.discount)} OFF`}
+                        </Badge>
+                      )}
+                      <Typography variant="body2">
+                        {variant.stock > 0 ? `In Stock: ${variant.stock}` : 'Out of Stock'}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+            
+            {selectedVariant && (
+              <Box mt={4}>
+                <div className="flex space-x-4">
+                  <Button 
+                    variant="outline"
+                    size="lg"
+                    className="flex-1"
+                    onClick={handleAddToCart}
+                    disabled={selectedVariant.stock <= 0}
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    Add to Cart
+                  </Button>
+                  <Button 
+                    variant="default"
+                    size="lg"
+                    className="flex-1"
+                    onClick={handleBuyNow}
+                    disabled={selectedVariant.stock <= 0}
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Buy Now
+                  </Button>
                 </div>
-              </TabsContent>
-              <TabsContent value="details">
-                <ul className="list-disc list-inside space-y-2">
-                  <li>Category: {product.category}</li>
-                  <li>Material: {product.variants[0].material}</li>
-                  {/* Add more details as needed */}
-                </ul>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-      </div>
+                {selectedVariant.stock <= 0 && (
+                  <Typography variant="body2" color="error" className="mt-2 text-center">
+                    This variant is currently out of stock
+                  </Typography>
+                )}
+              </Box>
+            )}
+          </Grid>
+        </Grid>
 
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-4">Customer Reviews</h2>
-        <ReviewList reviews={reviews} />
-        {user && <ReviewForm productId={id} />}
-      </div>
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-4">Similar Products</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {similarProducts.map((similarProduct) => (
-            <Link key={similarProduct.id} to={`/product/${similarProduct.id}`}>
-              <Card>
-                <CardContent className="p-4">
-                  <img src={similarProduct.image} alt={similarProduct.name} className="w-full h-48 object-cover rounded-md mb-2" />
-                  <h3 className="font-semibold">{similarProduct.name}</h3>
-                  <p className="text-sm text-gray-500">{formatPrice(similarProduct.variants[0].price)}</p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
+        {similarProducts.length > 0 && (
+          <Box mt={8}>
+            <Typography variant="h5" gutterBottom>Similar Products</Typography>
+            <Grid container spacing={3}>
+              {similarProducts.map((product) => (
+                <Grid item xs={12} sm={6} md={3} key={product.id}>
+                  <ProductCard 
+                    product={{
+                      ...product,
+                      image: product.coverImage,
+                      variants: product.variants.map(v => ({
+                        ...v,
+                        images: v.images || []
+                      }))
+                    }}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
+      </Box>
     </Container>
   );
 }

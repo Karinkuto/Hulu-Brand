@@ -2,6 +2,7 @@ import React from 'react';
 import { useCartStore } from '../stores/cartStore';
 import { Trash2, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { formatCurrency } from '@/utils/currencyFormatter';
 
 export function Cart() {
   const { items, removeItem, updateQuantity } = useCartStore();
@@ -25,7 +26,7 @@ export function Cart() {
                 )}
                 <div>
                   <h3 className="font-medium">{item.name}</h3>
-                  <p className="text-sm text-muted-foreground">${item.price.toFixed(2)} each</p>
+                  <p className="text-sm text-muted-foreground">{formatCurrency(item.price)} each</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -53,7 +54,7 @@ export function Cart() {
           <div className="border-t pt-4">
             <div className="flex justify-between items-center">
               <h2 className="font-semibold">Total:</h2>
-              <span className="font-semibold">${total.toFixed(2)}</span>
+              <span className="font-semibold">{formatCurrency(total)}</span>
             </div>
             <Button className="w-full mt-4">
               Proceed to Checkout
