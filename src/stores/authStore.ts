@@ -24,6 +24,7 @@ type AuthStore = {
   promoteUser: (userId: string) => void;
   demoteUser: (userId: string) => void;
   removeUser: (userId: string) => void;
+  register: (username: string, password: string, firstName: string, lastName: string, phone: string) => boolean;
 };
 
 const mockUsers: User[] = [
@@ -67,6 +68,31 @@ export const useAuthStore = create(
         set((state) => ({
           users: state.users.filter((user) => user.id !== userId),
         }));
+      },
+      register: (username, password, firstName, lastName, phone) => {
+        const existingUser = get().users.find(u => u.username === username);
+        if (existingUser) {
+          return false;
+        }
+        const newUser: User = {
+          id: (get().users.length + 1).toString(),
+          username,
+          email: `${username}@example.com`, // You might want to add email to the registration form
+          role: 'user',
+          lastLogin: new Date(),
+          phone,
+          firstName,
+          lastName,
+          createdAt: new Date(),
+        };
+        set(state => ({ 
+          users: [...state.users, newUser],
+          currentUser: newUser,
+          isAuthenticated: true,
+          isAdmin: false,
+          user: newUser
+        }));
+        return true;
       },
     }),
     {

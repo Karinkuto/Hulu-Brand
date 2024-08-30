@@ -20,6 +20,7 @@ export default function AuthPage() {
   const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const register = useAuthStore((state) => state.register);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,21 +53,20 @@ export default function AuthPage() {
       return;
     }
     try {
-      const usernameExists = checkUsernameExists(username);
-      if (usernameExists) {
+      const success = register(username, password, firstName, lastName, phone);
+      if (success) {
+        toast({
+          title: "Registration Successful",
+          description: "Welcome to our platform!",
+        })
+        navigate('/');
+      } else {
         toast({
           variant: "destructive",
           title: "Registration Failed",
           description: "Username already exists. Please choose a different one.",
         })
-        return;
       }
-      await register(username, password, firstName, lastName, phone);
-      toast({
-        title: "Registration Successful",
-        description: "Welcome to our platform!",
-      })
-      navigate('/');
     } catch (error) {
       toast({
         variant: "destructive",
