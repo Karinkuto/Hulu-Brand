@@ -1,5 +1,6 @@
 import create from 'zustand';
 import { persist } from 'zustand/middleware';
+import bcrypt from 'bcryptjs';
 
 interface User {
   id: string;
@@ -7,10 +8,11 @@ interface User {
   email: string;
   role: 'admin' | 'user';
   lastLogin: Date;
-  phone?: string; // Add this line
-  firstName?: string; // Add this line
-  lastName?: string; // Add this line
-  createdAt?: Date; // Add this line
+  phone?: string;
+  firstName?: string;
+  lastName?: string;
+  createdAt?: Date;
+  password: string;
 }
 
 type AuthStore = {
@@ -25,12 +27,22 @@ type AuthStore = {
   demoteUser: (userId: string) => void;
   removeUser: (userId: string) => void;
   register: (username: string, password: string, firstName: string, lastName: string, phone: string) => boolean;
+  clearStorage: () => void;
 };
 
 const mockUsers: User[] = [
-  { id: '1', username: 'admin', email: 'admin@example.com', role: 'admin', lastLogin: new Date('2023-06-10'), phone: '0912345678', firstName: 'Admin', lastName: 'User', createdAt: new Date('2023-01-01') },
-  { id: '2', username: 'user', email: 'user@example.com', role: 'user', lastLogin: new Date('2023-06-09'), phone: '0987654321', firstName: 'Regular', lastName: 'User', createdAt: new Date('2023-02-01') },
-  // ... update other mock users similarly ...
+  { 
+    id: '1', 
+    username: 'admin', 
+    password: 'admin123', 
+    email: 'admin@example.com', 
+    role: 'admin', 
+    lastLogin: new Date(), 
+    phone: '0912345678', 
+    firstName: 'Admin', 
+    lastName: 'User', 
+    createdAt: new Date('2023-01-01') 
+  }
 ];
 
 export const useAuthStore = create(
@@ -41,49 +53,82 @@ export const useAuthStore = create(
       isAuthenticated: false,
       isAdmin: false,
       user: null,
-      login: (username, password) => {
-        const user = mockUsers.find(u => u.username === username);
-        if (user && ((username === 'admin' && password === 'admin123') || username !== 'admin')) {
-          set({ currentUser: user, isAuthenticated: true, isAdmin: user.role === 'admin', user: user });
-          return true;
+      login: async (username: string, password: string) => {
+        const user = get().users.find(u => u.username === username);
+        if (user) {
+          if (username === 'admin' && password === 'admin123') {
+            set({ currentUser: user, isAuthenticated: true, isAdmin: true, user: user });
+            return true;
+          } else {
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (isMatch) {
+              set({ 
+                currentUser: user, 
+                isAuthenticated: true, 
+                isAdmin: user.role === 'admin', 
+                user: user 
+              });
+              return true;
+            }
+          }
         }
         return false;
       },
       logout: () => set({ currentUser: null, isAuthenticated: false, isAdmin: false, user: null }),
       promoteUser: (userId: string) => {
-        set((state) => ({
-          users: state.users.map((user) =>
+        set((state) => {
+          const updatedUsers = state.users.map((user) =>
             user.id === userId ? { ...user, role: 'admin' } : user
-          ),
-        }));
+          );
+          const updatedCurrentUser = state.currentUser && state.currentUser.id === userId
+            ? { ...state.currentUser, role: 'admin' }
+            : state.currentUser;
+          return {
+            users: updatedUsers,
+            currentUser: updatedCurrentUser,
+            isAdmin: updatedCurrentUser?.role === 'admin',
+            user: updatedCurrentUser
+          };
+        });
       },
       demoteUser: (userId: string) => {
-        set((state) => ({
-          users: state.users.map((user) =>
+        set((state) => {
+          const updatedUsers = state.users.map((user) =>
             user.id === userId ? { ...user, role: 'user' } : user
-          ),
-        }));
+          );
+          const updatedCurrentUser = state.currentUser && state.currentUser.id === userId
+            ? { ...state.currentUser, role: 'user' }
+            : state.currentUser;
+          return {
+            users: updatedUsers,
+            currentUser: updatedCurrentUser,
+            isAdmin: updatedCurrentUser?.role === 'admin',
+            user: updatedCurrentUser
+          };
+        });
       },
       removeUser: (userId: string) => {
         set((state) => ({
           users: state.users.filter((user) => user.id !== userId),
         }));
       },
-      register: (username, password, firstName, lastName, phone) => {
+      register: async (username, password, firstName, lastName, phone) => {
         const existingUser = get().users.find(u => u.username === username);
         if (existingUser) {
           return false;
         }
+        const hashedPassword = await bcrypt.hash(password, 10);
         const newUser: User = {
           id: (get().users.length + 1).toString(),
           username,
-          email: `${username}@example.com`, // You might want to add email to the registration form
+          email: `${username}@example.com`,
           role: 'user',
           lastLogin: new Date(),
           phone,
           firstName,
           lastName,
           createdAt: new Date(),
+          password: hashedPassword,
         };
         set(state => ({ 
           users: [...state.users, newUser],
@@ -94,9 +139,14 @@ export const useAuthStore = create(
         }));
         return true;
       },
+      clearStorage: () => {
+        localStorage.removeItem('auth-storage');
+        set({ users: mockUsers, currentUser: null, isAuthenticated: false, isAdmin: false, user: null });
+      },
     }),
     {
       name: 'auth-storage',
+      getStorage: () => localStorage, // Ensure we're using localStorage
     }
   )
 );

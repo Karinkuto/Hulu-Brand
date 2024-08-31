@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -26,17 +26,26 @@ export default function AuthPage() {
     e.preventDefault();
     setError('');
     try {
-      await login(username, password);
-      toast({
-        title: "Login Successful",
-        description: "Welcome back!",
-      })
-      navigate('/');
+      const success = await login(username, password);
+      if (success) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome back!",
+        })
+        navigate('/');
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: "Please check your credentials and try again.",
+        })
+      }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Please check your credentials and try again.",
+        description: "An unexpected error occurred. Please try again.",
       })
     }
   };

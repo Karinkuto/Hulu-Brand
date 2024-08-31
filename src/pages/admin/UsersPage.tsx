@@ -18,13 +18,41 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { Container } from "@mui/material";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function UsersPage() {
   const { users, isAdmin, promoteUser, demoteUser, removeUser } = useAuthStore();
+  const { toast } = useToast();
 
   if (!isAdmin) {
     return <div>You do not have permission to view this page.</div>;
   }
+
+  const validUsers = users.filter(user => user && user.id && user.username);
+
+  const handlePromoteUser = (userId: string, username: string) => {
+    promoteUser(userId);
+    toast({
+      title: "User Promoted",
+      description: `${username} has been promoted to admin.`,
+    });
+  };
+
+  const handleDemoteUser = (userId: string, username: string) => {
+    demoteUser(userId);
+    toast({
+      title: "User Demoted",
+      description: `${username} has been demoted to user.`,
+    });
+  };
+
+  const handleRemoveUser = (userId: string, username: string) => {
+    removeUser(userId);
+    toast({
+      title: "User Removed",
+      description: `${username} has been removed from the system.`,
+    });
+  };
 
   const formatDate = (dateString: string | Date | null) => {
     if (!dateString) {
@@ -60,7 +88,7 @@ export default function UsersPage() {
     <Container maxWidth="lg">
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <CardTitle>All Users ({validUsers.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -78,7 +106,7 @@ export default function UsersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
+              {validUsers.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.firstName}</TableCell>
@@ -103,16 +131,16 @@ export default function UsersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         {user.role !== 'admin' && (
-                          <DropdownMenuItem onClick={() => promoteUser(user.id)}>
+                          <DropdownMenuItem onClick={() => handlePromoteUser(user.id, user.username)}>
                             Promote to Admin
                           </DropdownMenuItem>
                         )}
                         {user.role === 'admin' && (
-                          <DropdownMenuItem onClick={() => demoteUser(user.id)}>
+                          <DropdownMenuItem onClick={() => handleDemoteUser(user.id, user.username)}>
                             Demote to User
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem onClick={() => removeUser(user.id)} className="text-red-600">
+                        <DropdownMenuItem onClick={() => handleRemoveUser(user.id, user.username)} className="text-red-600">
                           Remove User
                         </DropdownMenuItem>
                       </DropdownMenuContent>

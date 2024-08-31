@@ -17,7 +17,8 @@ import { Notifications } from './components/Notifications';
 import TransactionsPage from './pages/TransactionsPage';
 
 export default function App() {
-  const { isAuthenticated, isAdmin } = useAuthStore();
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const isAdmin = useAuthStore(state => state.isAdmin);
 
   return (
     <Router>

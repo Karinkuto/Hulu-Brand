@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { Container } from "@mui/material";
 import { Dock, DockIcon } from "@/components/magicui/dock";
@@ -22,33 +22,31 @@ import {
   Users,
   CreditCard,
   ShoppingCart,
-  Filter,
   Search,
+  Filter,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { ModeToggle } from "./mode-toggle";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCartStore } from "../stores/cartStore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useMemo } from "react";
+import { Input } from "@/components/ui/input";
 import { useProductStore } from "../stores/productStore";
-import { FilterMenu } from "./FilterMenu";
+import { Button } from "@/components/ui/button";
+import { FilterMenu } from "@/components/FilterMenu"; // Import the FilterMenu component
 
 export default function Header() {
-  const { isAuthenticated, isAdmin, user, logout } = useAuthStore();
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const isAdmin = useAuthStore(state => state.isAdmin);
+  const user = useAuthStore(state => state.user);
+  const logout = useAuthStore(state => state.logout);
+  
   const location = useLocation();
-  const navigate = useNavigate();
-  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const { searchTerm, setSearchTerm } = useProductStore();
-  const searchInputRef = useRef(null);
-  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
-  const cartItemsCount = useCartStore((state) => state.items.reduce((sum, item) => sum + item.quantity, 0));
-
-  useEffect(() => {
-    setIsSearchExpanded(location.pathname === '/products');
-  }, [location]);
+  const cartItemsCount = useCartStore((state) => state.items.length);
+  const notificationCount = 3; // Replace with actual notification count
 
   const mainDockItems = [
     { key: "home", icon: HomeIcon, to: "/", tooltip: "Home" },
@@ -56,22 +54,37 @@ export default function Header() {
   ];
 
   const utilityDockItems = [
-    { key: "cart", icon: ShoppingCart, tooltip: "Cart", to: "/cart" },
-    { key: "notifications", icon: Bell, tooltip: "Notifications", to: "/notifications" },
+    { 
+      key: "cart", 
+      icon: ShoppingCart, 
+      tooltip: "Cart", 
+      to: "/cart",
+      badge: cartItemsCount > 0 ? cartItemsCount : null
+    },
+    { 
+      key: "notifications", 
+      icon: Bell, 
+      tooltip: "Notifications", 
+      to: "/notifications",
+      badge: notificationCount > 0 ? notificationCount : null
+    },
     ...(!isAuthenticated ? [{ key: "login", icon: LogInIcon, to: "/auth", tooltip: "Login" }] : []),
   ];
 
-  const adminDockItems = isAdmin
-    ? [
-        { key: "dashboard", icon: LayoutDashboardIcon, to: "/admin/dashboard", tooltip: "Dashboard" },
-        { key: "adminProducts", icon: PackageIcon, to: "/admin/products", tooltip: "Manage Products" },
-        { key: "orders", icon: ClipboardListIcon, to: "/admin/orders", tooltip: "Orders" },
-        { key: "transactions", icon: CreditCard, to: "/transactions", tooltip: "Transactions" },
-        { key: "users", icon: Users, to: "/admin/users", tooltip: "Manage Users" },
-      ]
-    : [];
+  const adminDockItems = [
+    { key: "dashboard", icon: LayoutDashboardIcon, to: "/admin/dashboard", tooltip: "Dashboard" },
+    { key: "adminProducts", icon: PackageIcon, to: "/admin/products", tooltip: "Manage Products" },
+    { key: "orders", icon: ClipboardListIcon, to: "/admin/orders", tooltip: "Orders" },
+    { key: "transactions", icon: CreditCard, to: "/transactions", tooltip: "Transactions" },
+    { key: "users", icon: Users, to: "/admin/users", tooltip: "Manage Users" },
+  ];
 
-  const userDockItems = isAuthenticated ? [...(isAdmin ? adminDockItems : [])] : [];
+  const regularUserDockItems = [
+    // Remove the "My Orders" item
+    // Add any other regular user specific items here
+  ];
+
+  const userDockItems = isAuthenticated ? [...(isAdmin ? adminDockItems : regularUserDockItems)] : [];
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -85,13 +98,39 @@ export default function Header() {
     );
   };
 
+  const avatarGradient = useMemo(() => {
+    const colors = [
+      'from-red-500 to-yellow-500',
+      'from-green-500 to-blue-500',
+      'from-purple-500 to-pink-500',
+      'from-yellow-500 to-green-500',
+      'from-blue-500 to-indigo-500'
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }, []);
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { setSearchTerm } = useProductStore();
+  const [searchValue, setSearchValue] = useState("");
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    setSearchTerm(value);
+  };
+
+  useEffect(() => {
+    setIsExpanded(location.pathname === "/products");
+  }, [location]);
+
   return (
     <Container>
-      <header className="fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <LayoutGroup>
           <nav className={`flex h-14 items-center ${isAuthenticated ? 'justify-between' : 'justify-center'} px-4 pt-5`}>
             <TooltipProvider>
-              <Dock direction="middle" className="w-auto">
+              <Dock direction="middle" className="w-[fit-content]">
                 <Link to="/" className="text-xl font-bold text-primary px-2 flex items-end">
                   {isAuthenticated ? (
                     <span className="flex items-end" style={{ letterSpacing: '-0.35em' }}>
@@ -119,60 +158,54 @@ export default function Header() {
                   </DockIcon>
                 ))}
                 
-                {/* Search and Filter */}
-                <DockIcon>
-                  <AnimatePresence mode="popLayout">
-                    {isSearchExpanded ? (
-                      <motion.div
-                        key="search"
-                        layout
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: 'auto', opacity: 1 }}
-                        exit={{ width: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="overflow-hidden flex items-center"
+                {/* Updated sliding search bar */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: "300px", opacity: 1 }}
+                      exit={{ width: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="relative mx-2 overflow-hidden"
+                    >
+                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Input
+                        type="search"
+                        placeholder="Search products..."
+                        value={searchValue}
+                        onChange={handleSearch}
+                        className="w-full pl-8 pr-10 h-9 rounded-md focus-visible:ring-0 focus-visible:ring-offset-0"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-1/2 transform -translate-y-1/2 hover:bg-transparent"
+                        onClick={() => setIsFilterMenuOpen(true)}
                       >
-                        <div className="relative flex items-center">
-                          <Input 
-                            ref={searchInputRef}
-                            type="text" 
-                            placeholder="Search..." 
-                            className="w-64 pr-10 rounded-lg focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                          />
-                          <div className="absolute right-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => setIsFilterMenuOpen(true)}
-                            >
-                              <Filter className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
-                </DockIcon>
-
-                <DockIcon>
+                        <Filter className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
+                <DockIcon className="cursor-default">
                   <Separator orientation="vertical" className="mx-2 h-6" />
                 </DockIcon>
                 
-                {utilityDockItems.map(({ key, icon: Icon, to, tooltip }) => (
+                {utilityDockItems.map(({ key, icon: Icon, to, tooltip, badge }) => (
                   <DockIcon key={key}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Link to={to} className={getLinkClassName(to)}>
-                          <Icon className="size-4" />
-                          {key === "cart" && cartItemsCount > 0 && (
+                        <div className="relative">
+                          <Link to={to} className={getLinkClassName(to)}>
+                            <Icon className="size-4" />
+                          </Link>
+                          {badge !== null && key !== "login" && (
                             <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                              {cartItemsCount}
+                              {badge}
                             </span>
                           )}
-                        </Link>
+                        </div>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>{tooltip}</p>
@@ -190,7 +223,7 @@ export default function Header() {
               {isAuthenticated && (
                 <TooltipProvider>
                   <Dock direction="middle" className="w-auto">
-                    {userDockItems.map(({ key, icon: Icon, to, tooltip }) => (
+                    {(isAdmin ? adminDockItems : regularUserDockItems).map(({ key, icon: Icon, to, tooltip }) => (
                       <DockIcon key={key}>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -206,10 +239,12 @@ export default function Header() {
                     ))}
                     <DockIcon>
                       <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Link to="/profile" className={getLinkClassName("/profile")}>
-                            <UserIcon className="size-4" />
-                          </Link>
+                        <TooltipTrigger>
+                          <Avatar className={`h-8 w-8 bg-gradient-to-br ${avatarGradient}`}>
+                            <AvatarFallback className="bg-gray-200/50 text-gray-700 font-medium">
+                              {user?.username?.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>{isAdmin ? `Admin: ${user?.username}` : `User: ${user?.username}`}</p>
@@ -234,13 +269,12 @@ export default function Header() {
             </AnimatePresence>
           </nav>
         </LayoutGroup>
-        
-        <FilterMenu
-          isOpen={isFilterMenuOpen}
-          onOpenChange={setIsFilterMenuOpen}
-        />
       </header>
       <div className="h-[calc(56px)]"></div>
+      <FilterMenu
+        isOpen={isFilterMenuOpen}
+        onOpenChange={setIsFilterMenuOpen}
+      />
     </Container>
   );
 }
