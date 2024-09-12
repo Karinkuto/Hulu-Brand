@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectCards, Navigation, Pagination, EffectFade } from 'swiper/modules';
-import { Product } from '../types/product';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Eye } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
