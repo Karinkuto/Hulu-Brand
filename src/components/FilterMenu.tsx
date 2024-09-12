@@ -175,11 +175,7 @@ export function FilterMenu({ isOpen, onOpenChange }: FilterMenuProps) {
           </div>
         </div>
         <DialogFooter>
-          {isFiltersApplied && (
-            <Button variant="outline" onClick={clearAllFilters}>
-              Clear All
-            </Button>
-          )}
+          <Button variant="outline" onClick={clearAllFilters}>Clear All</Button>
           <Button onClick={applyFilters}>Apply Filters</Button>
         </DialogFooter>
       </DialogContent>
