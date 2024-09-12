@@ -9,11 +9,13 @@ import ShineBorder from "@/components/magicui/shine-border";
 import Particles from "@/components/magicui/particles";
 import { useTheme } from "@/components/theme-provider";
 import styles from "./HomePage.module.css";
+import { useNavigate } from "react-router-dom"; // Add this import
 
 export default function HomePage() {
   const { getTrendingProducts, products } = useProductStore();
   const trendingProducts = getTrendingProducts();
   const { theme } = useTheme();
+  const navigate = useNavigate(); // Add this line
 
   // Get featured products (new items or items with high stock)
   const featuredProducts = products
@@ -22,6 +24,10 @@ export default function HomePage() {
       return totalStock > 50 || new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000;
     })
     .slice(0, 10);
+
+  const handleShopNowClick = () => {
+    navigate("/products"); // Updated to route to the products page
+  };
 
   return (
     <Container maxWidth="xl">
@@ -38,7 +44,7 @@ export default function HomePage() {
             <p className="mt-4 text-xl text-gray-600 dark:text-gray-300">
               Explore our latest collection of trendsetting fashion
             </p>
-            <Button size="lg" className="mt-8">
+            <Button size="lg" className="mt-8" onClick={handleShopNowClick}>
               Shop Now <ArrowRight className="ml-2" />
             </Button>
           </div>
