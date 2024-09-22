@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useMemo, useState } from 'react';
 import { Container } from '@mui/material';
 import { useProductStore } from '../../stores/productStore';

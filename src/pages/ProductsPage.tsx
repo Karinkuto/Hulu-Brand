@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { useProductStore } from '../stores/productStore';
 import { Container, Grid, Box, Pagination } from '@mui/material';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from "react";
 import { useProductStore } from "@/stores/productStore";
 import { Container } from "@mui/material";

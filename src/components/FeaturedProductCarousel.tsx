@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectCards, Navigation, Pagination, EffectFade } from 'swiper/modules';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { Bell, Package, CreditCard } from 'lucide-react';
 

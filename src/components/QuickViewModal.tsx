@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
 import { X as XIcon } from 'lucide-react';

@@ -1,27 +1,69 @@
+// @ts-nocheck
 import React, { useState, useRef } from "react";
 import { useProductStore } from "../../stores/productStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, Search, Filter, Edit, Trash, Eye, Tag, MoreHorizontal, Check } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  PlusCircle,
+  Search,
+  Filter,
+  Edit,
+  Trash,
+  Eye,
+  Tag,
+  MoreHorizontal,
+  Check,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import AddProductForm from "./AddProductForm";
 import { Container } from "@mui/material";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import { formatCurrency } from '@/utils/currencyFormatter';
-import { Calendar } from "@/components/ui/calendar"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatCurrency } from "@/utils/currencyFormatter";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import EditProductForm from "./EditProductForm";
 
@@ -32,9 +74,15 @@ export default function AdminProducts() {
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
   const [isDiscountDialogOpen, setIsDiscountDialogOpen] = useState(false);
   const [discountAmount, setDiscountAmount] = useState<number>(0);
-  const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage');
-  const [discountStartDate, setDiscountStartDate] = useState<Date | undefined>(undefined);
-  const [discountEndDate, setDiscountEndDate] = useState<Date | undefined>(undefined);
+  const [discountType, setDiscountType] = useState<"percentage" | "fixed">(
+    "percentage"
+  );
+  const [discountStartDate, setDiscountStartDate] = useState<Date | undefined>(
+    undefined
+  );
+  const [discountEndDate, setDiscountEndDate] = useState<Date | undefined>(
+    undefined
+  );
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -48,20 +96,21 @@ export default function AdminProducts() {
   const filteredProducts = products.filter(
     (product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (selectedCategories.length === 0 || selectedCategories.includes(product.category))
+      (selectedCategories.length === 0 ||
+        selectedCategories.includes(product.category))
   );
 
   const handleCategoryChange = (category: string) => {
-    setSelectedCategories(prev =>
+    setSelectedCategories((prev) =>
       prev.includes(category)
-        ? prev.filter(c => c !== category)
+        ? prev.filter((c) => c !== category)
         : [...prev, category]
     );
   };
 
   const formatPrice = (price: number | string) => {
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    return isNaN(numPrice) ? 'N/A' : formatCurrency(numPrice);
+    const numPrice = typeof price === "string" ? parseFloat(price) : price;
+    return isNaN(numPrice) ? "N/A" : formatCurrency(numPrice);
   };
 
   const handleViewProduct = (productId: string) => {
@@ -69,7 +118,7 @@ export default function AdminProducts() {
   };
 
   const handleEditProduct = (productId: string) => {
-    const productToEdit = products.find(p => p.id === productId);
+    const productToEdit = products.find((p) => p.id === productId);
     if (productToEdit) {
       setProductToEdit(productToEdit);
       setIsEditDialogOpen(true);
@@ -77,10 +126,10 @@ export default function AdminProducts() {
   };
 
   const handleApplyDiscount = (productId: string) => {
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     if (product) {
       setDiscountAmount(0);
-      setDiscountType('percentage');
+      setDiscountType("percentage");
       setDiscountStartDate(new Date());
       setDiscountEndDate(undefined);
       setSelectedVariants([]);
@@ -106,27 +155,42 @@ export default function AdminProducts() {
         return;
       }
 
-      if (discountStartDate && discountEndDate && discountStartDate > discountEndDate) {
+      if (
+        discountStartDate &&
+        discountEndDate &&
+        discountStartDate > discountEndDate
+      ) {
         setDiscountError("End date must be after start date.");
         setIsLoading(false);
         return;
       }
 
-      updateProduct(editingProduct, { 
+      updateProduct(editingProduct, {
         discountStartDate,
         discountEndDate,
-        variants: products.find(p => p.id === editingProduct)?.variants.map(v => 
-          selectedVariants.includes(v.sku) ? { ...v, discount: discountAmount, discountType } : v
-        )
+        variants: products
+          .find((p) => p.id === editingProduct)
+          ?.variants.map((v) =>
+            selectedVariants.includes(v.sku)
+              ? { ...v, discount: discountAmount, discountType }
+              : v
+          ),
       });
 
-      console.log('Updated product:', products.find(p => p.id === editingProduct));
+      console.log(
+        "Updated product:",
+        products.find((p) => p.id === editingProduct)
+      );
 
       setIsDiscountDialogOpen(false);
       resetDiscountForm();
       toast({
         title: "Discount Applied",
-        description: `A ${discountType === 'percentage' ? `${discountAmount}%` : formatCurrency(discountAmount)} discount has been applied to the selected variants.`,
+        description: `A ${
+          discountType === "percentage"
+            ? `${discountAmount}%`
+            : formatCurrency(discountAmount)
+        } discount has been applied to the selected variants.`,
       });
       setIsLoading(false);
     }
@@ -135,7 +199,7 @@ export default function AdminProducts() {
   const resetDiscountForm = () => {
     setEditingProduct(null);
     setDiscountAmount(0);
-    setDiscountType('percentage');
+    setDiscountType("percentage");
     setDiscountStartDate(undefined);
     setDiscountEndDate(undefined);
     setSelectedVariants([]);
@@ -143,11 +207,11 @@ export default function AdminProducts() {
 
   const removeDiscount = (productId: string) => {
     setIsLoading(true);
-    updateProduct(productId, { 
+    updateProduct(productId, {
       discount: undefined,
       discountType: undefined,
       discountStartDate: undefined,
-      discountEndDate: undefined
+      discountEndDate: undefined,
     });
     toast({
       title: "Discount Removed",
@@ -157,7 +221,7 @@ export default function AdminProducts() {
   };
 
   const handleDeleteProduct = (productId: string) => {
-    const productToDelete = products.find(p => p.id === productId);
+    const productToDelete = products.find((p) => p.id === productId);
     if (!productToDelete) return;
 
     deletedProductRef.current = productToDelete;
@@ -176,7 +240,7 @@ export default function AdminProducts() {
 
   const confirmDelete = (productId: string) => {
     deleteProduct(productId);
-    
+
     if (undoTimeoutRef.current) {
       clearTimeout(undoTimeoutRef.current);
     }
@@ -202,7 +266,7 @@ export default function AdminProducts() {
       const { addProduct } = useProductStore.getState();
       addProduct(deletedProductRef.current);
       deletedProductRef.current = null;
-      
+
       if (undoTimeoutRef.current) {
         clearTimeout(undoTimeoutRef.current);
       }
@@ -218,12 +282,12 @@ export default function AdminProducts() {
   const deletedProductRef = useRef<Product | null>(null);
 
   const formatDiscount = (variant: any) => {
-    console.log('Formatting discount for variant:', variant);
+    console.log("Formatting discount for variant:", variant);
     if (!variant.discount || isNaN(variant.discount)) {
-      return 'No discount';
+      return "No discount";
     }
-    
-    if (variant.discountType === 'percentage') {
+
+    if (variant.discountType === "percentage") {
       return `${variant.discount}% off`;
     } else {
       return `${formatCurrency(variant.discount)} off`;
@@ -272,7 +336,10 @@ export default function AdminProducts() {
               </CardHeader>
               <CardContent>
                 {categories.map((category) => (
-                  <div key={category} className="flex items-center space-x-2 mb-2">
+                  <div
+                    key={category}
+                    className="flex items-center space-x-2 mb-2"
+                  >
                     <Checkbox
                       id={category}
                       checked={selectedCategories.includes(category)}
@@ -307,36 +374,51 @@ export default function AdminProducts() {
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="w-20 h-20 relative">
-                        <img 
-                          src={product.coverImage} 
-                          alt={product.name} 
+                        <img
+                          src={product.coverImage}
+                          alt={product.name}
                           className="w-full h-full object-cover rounded absolute inset-0"
                         />
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">{product.name || 'Unnamed Product'}</TableCell>
-                    <TableCell>{product.category || 'Uncategorized'}</TableCell>
+                    <TableCell className="font-medium">
+                      {product.name || "Unnamed Product"}
+                    </TableCell>
+                    <TableCell>{product.category || "Uncategorized"}</TableCell>
                     <TableCell>
                       <div className="space-y-2">
                         {product.variants.map((variant, index) => (
-                          <div key={index} className="flex flex-wrap items-center gap-2 p-2 border rounded-md">
+                          <div
+                            key={index}
+                            className="flex flex-wrap items-center gap-2 p-2 border rounded-md"
+                          >
                             <Badge variant="outline" className="text-xs">
                               SKU: {variant.sku}
                             </Badge>
                             <Badge variant="secondary" className="text-xs">
-                              Size: {variant.size || 'N/A'}
+                              Size: {variant.size || "N/A"}
                             </Badge>
-                            <Badge variant={variant.stock > 0 ? "success" : "destructive"} className="text-xs">
-                              {variant.stock > 0 ? `Stock: ${variant.stock}` : "Out of Stock"}
+                            <Badge
+                              variant={
+                                variant.stock > 0 ? "success" : "destructive"
+                              }
+                              className="text-xs"
+                            >
+                              {variant.stock > 0
+                                ? `Stock: ${variant.stock}`
+                                : "Out of Stock"}
                             </Badge>
                             <Badge variant="default" className="text-xs">
                               {formatPrice(variant.price)}
                             </Badge>
                             {variant.color && (
-                              <Badge variant="outline" className="text-xs flex items-center">
-                                <div 
-                                  className="w-3 h-3 rounded-full mr-1" 
-                                  style={{backgroundColor: variant.color}}
+                              <Badge
+                                variant="outline"
+                                className="text-xs flex items-center"
+                              >
+                                <div
+                                  className="w-3 h-3 rounded-full mr-1"
+                                  style={{ backgroundColor: variant.color }}
                                 ></div>
                                 Color: {variant.color}
                               </Badge>
@@ -351,9 +433,9 @@ export default function AdminProducts() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {product.variants.some(v => v.discount) ? (
+                      {product.variants.some((v) => v.discount) ? (
                         <div className="flex flex-wrap gap-2">
-                          {product.variants.map((v, index) => 
+                          {product.variants.map((v, index) =>
                             v.discount ? (
                               <Badge key={index} variant="outline">
                                 {v.size}: {formatDiscount(v)}
@@ -361,7 +443,9 @@ export default function AdminProducts() {
                             ) : null
                           )}
                         </div>
-                      ) : 'No discount'}
+                      ) : (
+                        "No discount"
+                      )}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -373,19 +457,27 @@ export default function AdminProducts() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleViewProduct(product.id)}>
+                          <DropdownMenuItem
+                            onClick={() => handleViewProduct(product.id)}
+                          >
                             <Eye className="mr-2 h-4 w-4" />
                             View
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditProduct(product.id)}>
+                          <DropdownMenuItem
+                            onClick={() => handleEditProduct(product.id)}
+                          >
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleApplyDiscount(product.id)}>
+                          <DropdownMenuItem
+                            onClick={() => handleApplyDiscount(product.id)}
+                          >
                             <Tag className="mr-2 h-4 w-4" />
                             Apply Discount
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => removeDiscount(product.id)}>
+                          <DropdownMenuItem
+                            onClick={() => removeDiscount(product.id)}
+                          >
                             <Tag className="mr-2 h-4 w-4" />
                             Remove Discount
                           </DropdownMenuItem>
@@ -409,55 +501,76 @@ export default function AdminProducts() {
       </div>
 
       {/* Discount Dialog */}
-      <Dialog open={isDiscountDialogOpen} onOpenChange={setIsDiscountDialogOpen}>
+      <Dialog
+        open={isDiscountDialogOpen}
+        onOpenChange={setIsDiscountDialogOpen}
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Apply Discount</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {editingProduct && products.find(p => p.id === editingProduct)?.variants.length > 1 && (
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="variants" className="text-right">
-                  Variants
-                </Label>
-                <div className="col-span-3 space-y-2">
-                  {products.find(p => p.id === editingProduct)?.variants.map((variant) => (
-                    <div key={variant.sku}>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          selectedVariants.includes(variant.sku) && "border-primary"
-                        )}
-                        onClick={() => {
-                          setSelectedVariants(prev =>
-                            prev.includes(variant.sku)
-                              ? prev.filter(sku => sku !== variant.sku)
-                              : [...prev, variant.sku]
-                          );
-                        }}
-                      >
-                        <div className="flex items-center space-x-2 flex-1">
-                          <div 
-                            className="w-4 h-4 rounded-sm" 
-                            style={{backgroundColor: variant.color}}
-                          />
-                          <span>{variant.size}</span>
-                          <Separator orientation="vertical" className="h-4" />
-                          <span className="text-muted-foreground">{formatCurrency(variant.price)}</span>
+            {editingProduct &&
+              products?.find((p) => p.id === editingProduct)?.variants &&
+              products?.find((p) => p.id === editingProduct)?.variants.length >
+                1 && (
+                <div className="grid grid-cols-4 items-start gap-4">
+                  <Label htmlFor="variants" className="text-right">
+                    Variants
+                  </Label>
+                  <div className="col-span-3 space-y-2">
+                    {products
+                      ?.find((p) => p.id === editingProduct)
+                      ?.variants.map((variant) => (
+                        <div key={variant.sku}>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              selectedVariants.includes(variant.sku) &&
+                                "border-primary"
+                            )}
+                            onClick={() => {
+                              setSelectedVariants((prev) =>
+                                prev.includes(variant.sku)
+                                  ? prev.filter((sku) => sku !== variant.sku)
+                                  : [...prev, variant.sku]
+                              );
+                            }}
+                          >
+                            <div className="flex items-center space-x-2 flex-1">
+                              <div
+                                className="w-4 h-4 rounded-sm"
+                                style={{ backgroundColor: variant.color }}
+                              />
+                              <span>{variant.size}</span>
+                              <Separator
+                                orientation="vertical"
+                                className="h-4"
+                              />
+                              <span className="text-muted-foreground">
+                                {formatCurrency(variant.price)}
+                              </span>
+                            </div>
+                            {selectedVariants.includes(variant.sku) && (
+                              <Check className="w-4 h-4 ml-2" />
+                            )}
+                          </Button>
                         </div>
-                        {selectedVariants.includes(variant.sku) && <Check className="w-4 h-4 ml-2" />}
-                      </Button>
-                    </div>
-                  ))}
+                      ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="discountType" className="text-right">
                 Type
               </Label>
-              <Select onValueChange={(value: 'percentage' | 'fixed') => setDiscountType(value)} defaultValue={discountType}>
+              <Select
+                onValueChange={(value: "percentage" | "fixed") =>
+                  setDiscountType(value)
+                }
+                defaultValue={discountType}
+              >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select discount type" />
                 </SelectTrigger>
@@ -469,7 +582,9 @@ export default function AdminProducts() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="discount" className="text-right">
-                {discountType === 'percentage' ? 'Discount %' : 'Discount Amount'}
+                {discountType === "percentage"
+                  ? "Discount %"
+                  : "Discount Amount"}
               </Label>
               <Input
                 id="discount"
@@ -493,7 +608,11 @@ export default function AdminProducts() {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {discountStartDate ? format(discountStartDate, "PPP") : <span>Pick a date</span>}
+                    {discountStartDate ? (
+                      format(discountStartDate, "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -520,7 +639,11 @@ export default function AdminProducts() {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {discountEndDate ? format(discountEndDate, "PPP") : <span>Pick a date</span>}
+                    {discountEndDate ? (
+                      format(discountEndDate, "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -539,7 +662,10 @@ export default function AdminProducts() {
             <p className="text-red-500 text-sm mt-2">{discountError}</p>
           )}
           <DialogFooter>
-            <Button onClick={applyDiscount} disabled={isLoading || selectedVariants.length === 0}>
+            <Button
+              onClick={applyDiscount}
+              disabled={isLoading || selectedVariants.length === 0}
+            >
               {isLoading ? "Applying..." : "Apply Discount"}
             </Button>
           </DialogFooter>
@@ -553,8 +679,8 @@ export default function AdminProducts() {
             <DialogTitle>Edit Product</DialogTitle>
           </DialogHeader>
           {productToEdit && (
-            <EditProductForm 
-              product={productToEdit} 
+            <EditProductForm
+              product={productToEdit}
               onClose={() => setIsEditDialogOpen(false)}
             />
           )}

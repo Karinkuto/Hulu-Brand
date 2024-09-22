@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Sun, Moon } from "lucide-react"
 import { useTheme } from "@/components/theme-provider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";

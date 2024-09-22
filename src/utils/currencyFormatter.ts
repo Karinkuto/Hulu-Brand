@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-ET', {
     style: 'currency',

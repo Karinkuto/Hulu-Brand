@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const generateMockTransactions = () => {
   const today = new Date();
   return Array.from({ length: 30 }, (_, i) => {

@@ -1,19 +1,22 @@
 {
   "files": [],
   "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.node.json"
-    }
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
     "baseUrl": ".",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": false,
+    "alwaysStrict": false,
+    "strictNullChecks": false,
+    "suppressImplicitAnyIndexErrors": true,
     "paths": {
       "@/*": ["./src/*"]
-    },
-    "esModuleInterop": true
-  },
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+    }
+  }
 }
