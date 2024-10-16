@@ -31,7 +31,7 @@ export function FeaturedProductCarousel({ products }: FeaturedProductCarouselPro
     window.addEventListener('resize', handleResize);
     setLoopedProducts([...products, ...products, ...products, ...products]);
     return () => window.removeEventListener('resize', handleResize);
-  }, [handleResize]);
+  }, [handleResize, products]);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();

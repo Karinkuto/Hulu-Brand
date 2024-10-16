@@ -53,17 +53,6 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const discountedPrice = calculateDiscountedPrice(lowestPricedVariant);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: discountedPrice,
-      quantity: 1,
-      imageUrl: product.image
-    });
-  };
-
   const handleCardClick = () => {
     navigate(`/product/${product.id}`);
   };
