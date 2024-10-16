@@ -1,7 +1,7 @@
 import React from "react";
 import { useProductStore } from "@/stores/productStore";
 import { Container } from "@mui/material";
-import { HomepageProductCard } from "@/components/HomepageProductCard"; // Update this import
+import { HomepageProductCard } from "@/components/HomepageProductCard";
 import { FeaturedProductCarousel } from "@/components/FeaturedProductCarousel";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Star } from "lucide-react";
@@ -9,24 +9,25 @@ import ShineBorder from "@/components/magicui/shine-border";
 import Particles from "@/components/magicui/particles";
 import { useTheme } from "@/components/theme-provider";
 import styles from "./HomePage.module.css";
-import { useNavigate } from "react-router-dom"; // Add this import
+import { useNavigate } from "react-router-dom";
+import { Product } from "@/types/product";
 
 export default function HomePage() {
   const { getTrendingProducts, products } = useProductStore();
   const trendingProducts = getTrendingProducts();
   const { theme } = useTheme();
-  const navigate = useNavigate(); // Add this line
+  const navigate = useNavigate();
 
   // Get featured products (new items or items with high stock)
   const featuredProducts = products
-    .filter(product => {
+    .filter((product: Product) => {
       const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0);
-      return totalStock > 50 || new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000;
+      return totalStock > 50 || (product.createdAt && new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000);
     })
     .slice(0, 10);
 
   const handleShopNowClick = () => {
-    navigate("/products"); // Updated to route to the products page
+    navigate("/products");
   };
 
   return (
@@ -64,9 +65,9 @@ export default function HomePage() {
             Trending Products
           </h2>
           <div className={styles.bentoContainer}>
-            {trendingProducts.slice(0, 9).map((product, index) => (
+            {trendingProducts.slice(0, 9).map((product: Product, index) => (
               <div key={product.id} className={`${styles.bentoItem} ${styles[`bentoItem${index + 1}`]}`}>
-                <HomepageProductCard product={product} /> {/* Use the new component here */}
+                <HomepageProductCard product={product} />
               </div>
             ))}
           </div>
