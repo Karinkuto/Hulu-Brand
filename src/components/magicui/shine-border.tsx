@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { cn } from "@/lib/utils";
 
 type TColorProp = string | string[];

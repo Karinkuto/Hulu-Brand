@@ -4,6 +4,7 @@ import { Container, Grid, Box, Pagination } from '@mui/material';
 import { ProductCard } from '@/components/ProductCard';
 import { QuickViewModal } from '@/components/QuickViewModal';
 import { Typography } from '@mui/material';
+import { Product } from '@/types/product'; // Make sure to import the correct Product type
 
 export default function ProductsPage() {
   const { products, searchTerm, filters } = useProductStore();
@@ -60,7 +61,7 @@ export default function ProductsPage() {
       </Box>
 
       <Grid container spacing={3}>
-        {paginatedProducts.map((product) => (
+        {paginatedProducts.map((product: Product) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
             <ProductCard 
               product={product}

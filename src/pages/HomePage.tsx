@@ -65,7 +65,7 @@ export default function HomePage() {
             Trending Products
           </h2>
           <div className={styles.bentoContainer}>
-            {trendingProducts.slice(0, 9).map((product: Product, index) => (
+            {trendingProducts.slice(0, 9).map((product: Product, index: number) => (
               <div key={product.id} className={`${styles.bentoItem} ${styles[`bentoItem${index + 1}`]}`}>
                 <HomepageProductCard product={product} />
               </div>
