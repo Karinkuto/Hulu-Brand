@@ -81,7 +81,7 @@ export const useAuthStore = create(
             user.id === userId ? { ...user, role: 'admin' as const } : user
           );
           const updatedCurrentUser = state.currentUser && state.currentUser.id === userId
-            ? { ...state.currentUser, role: 'admin' }
+            ? { ...state.currentUser, role: 'admin' as const }
             : state.currentUser;
           return {
             users: updatedUsers,
@@ -97,7 +97,7 @@ export const useAuthStore = create(
             user.id === userId ? { ...user, role: 'user' as const } : user
           );
           const updatedCurrentUser = state.currentUser && state.currentUser.id === userId
-            ? { ...state.currentUser, role: 'user' }
+            ? { ...state.currentUser, role: 'user' as const }
             : state.currentUser;
           return {
             users: updatedUsers,
