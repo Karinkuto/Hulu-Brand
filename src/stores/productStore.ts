@@ -42,7 +42,7 @@ interface Order {
   id: string;
   customerId: string;
   date: Date;
-  status: 'completed' | 'processing' | 'shipped';
+  status: 'completed' | 'processing' | 'shipped' | 'cancelled';
   total: number;
   items: OrderItem[];
 }

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, Eye } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { Link } from 'react-router-dom';
+import { Product } from '@/types/product'; // Add this import
 
 // Import Swiper styles
 import 'swiper/css';
