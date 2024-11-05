@@ -17,6 +17,15 @@
     "suppressImplicitAnyIndexErrors": true,
     "paths": {
       "@/*": ["./src/*"]
+<<<<<<< HEAD
     }
   }
 }
+=======
+    },
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["@"]
+}
+>>>>>>> 79c024ba4803911fa97409be7d238505eac61268

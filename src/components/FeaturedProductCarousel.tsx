@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, Eye } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { Link } from 'react-router-dom';
+import { Product } from '@/types/product'; // Add this import
 
 // Import Swiper styles
 import 'swiper/css';
@@ -32,7 +33,7 @@ export function FeaturedProductCarousel({ products }: FeaturedProductCarouselPro
     window.addEventListener('resize', handleResize);
     setLoopedProducts([...products, ...products, ...products, ...products]);
     return () => window.removeEventListener('resize', handleResize);
-  }, [handleResize]);
+  }, [handleResize, products]);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();

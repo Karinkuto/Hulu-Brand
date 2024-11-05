@@ -79,10 +79,17 @@ export const useAuthStore = create(
       promoteUser: (userId: string) => {
         set((state) => {
           const updatedUsers = state.users.map((user) =>
+<<<<<<< HEAD
             user.id === userId ? { ...user, role: 'admin' as 'admin' } : user
           );
           const updatedCurrentUser = state.currentUser && state.currentUser.id === userId
             ? { ...state.currentUser, role: 'admin' as 'admin' }
+=======
+            user.id === userId ? { ...user, role: 'admin' as const } : user
+          );
+          const updatedCurrentUser = state.currentUser && state.currentUser.id === userId
+            ? { ...state.currentUser, role: 'admin' as const }
+>>>>>>> 79c024ba4803911fa97409be7d238505eac61268
             : state.currentUser;
           return {
             users: updatedUsers,
@@ -95,10 +102,17 @@ export const useAuthStore = create(
       demoteUser: (userId: string) => {
         set((state) => {
           const updatedUsers = state.users.map((user) =>
+<<<<<<< HEAD
             user.id === userId ? { ...user, role: 'user' as 'user' } : user
           );
           const updatedCurrentUser = state.currentUser && state.currentUser.id === userId
             ? { ...state.currentUser, role: 'user' as 'user' }
+=======
+            user.id === userId ? { ...user, role: 'user' as const } : user
+          );
+          const updatedCurrentUser = state.currentUser && state.currentUser.id === userId
+            ? { ...state.currentUser, role: 'user' as const }
+>>>>>>> 79c024ba4803911fa97409be7d238505eac61268
             : state.currentUser;
           return {
             users: updatedUsers,

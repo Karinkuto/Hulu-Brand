@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Product } from "../types/product";
+import { Product, ProductVariant } from "../types/product";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCartStore } from "../stores/cartStore";
 import { formatCurrency } from "@/utils/currencyFormatter";
@@ -11,9 +11,10 @@ import { Info } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
+  onQuickView?: (product: Product) => void;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, onQuickView }: ProductCardProps) {
   const { addItem } = useCartStore();
   const navigate = useNavigate();
 
@@ -58,6 +59,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const discountedPrice = calculateDiscountedPrice(lowestPricedVariant);
 
+<<<<<<< HEAD
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     addItem({
@@ -69,6 +71,8 @@ export function ProductCard({ product }: ProductCardProps) {
     });
   };
 
+=======
+>>>>>>> 79c024ba4803911fa97409be7d238505eac61268
   const handleCardClick = () => {
     navigate(`/product/${product.id}`);
   };
@@ -81,7 +85,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <CardContent className="p-3 flex flex-col flex-grow">
         <div className="relative mb-4 w-full h-52">
           <img
-            src={product.image}
+            src={product.coverImage}
             alt={product.name}
             className="w-full h-full object-cover rounded-md"
           />

@@ -43,7 +43,11 @@ interface Order {
   id: string;
   customerId: string;
   date: Date;
+<<<<<<< HEAD
   status: "completed" | "processing" | "shipped" | "cancelled";
+=======
+  status: 'completed' | 'processing' | 'shipped' | 'cancelled';
+>>>>>>> 79c024ba4803911fa97409be7d238505eac61268
   total: number;
   items: OrderItem[];
 }
@@ -593,6 +597,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     priceRange: [null, null],
   },
   setFilters: (filters) => set({ filters }),
+<<<<<<< HEAD
   resetFilters: () =>
     set({
       filters: {
@@ -604,3 +609,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       },
     }),
 }));
+=======
+  resetFilters: () => set({ filters: { categories: [], colors: [], sizes: [], materials: [], priceRange: [null, null] } }),
+}));
+>>>>>>> 79c024ba4803911fa97409be7d238505eac61268

@@ -24,7 +24,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FilterIcon, X } from "lucide-react";
+import { FilterIcon } from "lucide-react";
 
 type TransactionStatus = 'all' | 'completed' | 'pending' | 'cancelled';
 

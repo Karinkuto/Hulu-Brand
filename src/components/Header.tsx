@@ -34,7 +34,7 @@ import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { ModeToggle } from "./mode-toggle";
 import { Separator } from "@/components/ui/separator";
 import { useCartStore } from "../stores/cartStore";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { useProductStore } from "../stores/productStore";
@@ -88,8 +88,6 @@ export default function Header() {
     // Remove the "My Orders" item
     // Add any other regular user specific items here
   ];
-
-  const userDockItems = isAuthenticated ? [...(isAdmin ? adminDockItems : regularUserDockItems)] : [];
 
   const isActive = (path: string) => location.pathname === path;
 
