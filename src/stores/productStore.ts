@@ -43,11 +43,7 @@ interface Order {
   id: string;
   customerId: string;
   date: Date;
-<<<<<<< HEAD
   status: "completed" | "processing" | "shipped" | "cancelled";
-=======
-  status: 'completed' | 'processing' | 'shipped' | 'cancelled';
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
   total: number;
   items: OrderItem[];
 }
@@ -542,7 +538,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
     const lastMonth = new Date();
     lastMonth.setMonth(lastMonth.getMonth() - 1);
 
-    // If there are sales, use them to determine trending products
     if (state.sales.length > 0) {
       const recentSales = state.sales.filter((sale) => sale.date >= lastMonth);
       const productSales = recentSales.reduce((acc, sale) => {
@@ -556,7 +551,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
         .map(([productId]) => state.products.find((p) => p.id === productId)!)
         .filter(Boolean);
     } else {
-      // If no sales data, return a random selection of products
       return state.products.sort(() => 0.5 - Math.random()).slice(0, 8);
     }
   },
@@ -597,7 +591,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
     priceRange: [null, null],
   },
   setFilters: (filters) => set({ filters }),
-<<<<<<< HEAD
   resetFilters: () =>
     set({
       filters: {
@@ -609,7 +602,3 @@ export const useProductStore = create<ProductState>((set, get) => ({
       },
     }),
 }));
-=======
-  resetFilters: () => set({ filters: { categories: [], colors: [], sizes: [], materials: [], priceRange: [null, null] } }),
-}));
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268

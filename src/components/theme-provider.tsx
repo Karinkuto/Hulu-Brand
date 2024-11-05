@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-// @ts-nocheck
-=======
 import React from 'react'
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
 import { createContext, useContext, useEffect, useState } from "react"
 
 type Theme = "dark" | "light" | "system"

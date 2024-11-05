@@ -1,169 +1,135 @@
 // @ts-nocheck
-import { create } from 'zustand';
+import create from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface TransactionItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
 
 interface Transaction {
   id: string;
-  date: Date;
-  status: 'completed' | 'pending' | 'cancelled';
+  date: string;
   total: number;
-  items: Array<{
-    id: string;
-    name: string;
-    quantity: number;
-    price: number;
-  }>;
+  items: TransactionItem[];
   userId: string;
-  userName: string; // Add this line
+  userName: string;
 }
 
-interface TransactionStore {
+type TransactionStore = {
   transactions: Transaction[];
   addTransaction: (transaction: Transaction) => void;
-}
+  removeTransaction: (transactionId: string) => void;
+  getTransactionsByUserId: (userId: string) => Transaction[];
+  getTransactionById: (transactionId: string) => Transaction | undefined;
+};
 
-// Expanded mock transactions for a clothing store
 const mockTransactions: Transaction[] = [
   {
     id: '1',
-    date: new Date('2023-06-01'),
-    status: 'completed',
-    total: 89.97,
+    date: '2024-02-15',
+    total: 149.97,
     items: [
-      { id: 'item1', name: 'Classic T-Shirt', quantity: 2, price: 19.99 },
-      { id: 'item2', name: 'Slim Fit Jeans', quantity: 1, price: 49.99 },
+      { id: 'item1', name: 'Classic T-Shirt', quantity: 3, price: 19.99 },
+      { id: 'item2', name: 'Jeans', quantity: 2, price: 45.00 },
     ],
-    userId: '2',
-    userName: 'John Doe', // Add user names
+    userId: '1',
+    userName: 'John Smith'
   },
   {
     id: '2',
-    date: new Date('2023-06-02'),
-    status: 'pending',
-    total: 119.97,
+    date: '2024-02-14',
+    total: 159.97,
     items: [
       { id: 'item3', name: 'Summer Dress', quantity: 3, price: 39.99 },
     ],
     userId: '3',
-<<<<<<< HEAD
-    userName: 'Jane Doe',
-=======
-    userName: 'User 3', // Added userName
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
+    userName: 'Jane Doe'
   },
   {
     id: '3',
-    date: new Date('2023-06-03'),
-    status: 'completed',
+    date: '2024-02-13',
     total: 129.99,
     items: [
       { id: 'item4', name: 'Leather Jacket', quantity: 1, price: 129.99 },
     ],
     userId: '4',
-<<<<<<< HEAD
-    userName: 'Bob Smith',
-=======
-    userName: 'User 4', // Added userName
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
+    userName: 'Bob Smith'
   },
   {
     id: '4',
-    date: new Date('2023-06-04'),
-    status: 'completed',
+    date: '2024-02-12',
     total: 159.98,
     items: [
       { id: 'item5', name: 'Running Shoes', quantity: 2, price: 79.99 },
     ],
     userId: '5',
-<<<<<<< HEAD
-    userName: 'Alice Johnson',
-=======
-    userName: 'User 5', // Added userName
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
+    userName: 'Alice Johnson'
   },
   {
     id: '5',
-    date: new Date('2023-06-05'),
-    status: 'cancelled',
+    date: '2024-02-11',
     total: 59.97,
     items: [
       { id: 'item1', name: 'Classic T-Shirt', quantity: 3, price: 19.99 },
     ],
     userId: '2',
-<<<<<<< HEAD
-    userName: 'John Doe',
-=======
-    userName: 'John Doe', // Added userName
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
+    userName: 'John Doe'
   },
-  // Add more transactions to cover a 30-day period
   {
     id: '31',
-    date: new Date('2023-05-15'),
-    status: 'completed',
-    total: 299.97,
+    date: '2024-01-15',
+    total: 19.99,
     items: [
-      { id: 'item4', name: 'Leather Jacket', quantity: 1, price: 199.99 },
-      { id: 'item8', name: 'Wool Sweater', quantity: 1, price: 79.99 },
       { id: 'item9', name: 'Silk Scarf', quantity: 1, price: 19.99 },
     ],
     userId: '7',
-<<<<<<< HEAD
-    userName: 'Alice Johnson',
-=======
-    userName: 'User 7', // Added userName
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
+    userName: 'Alice Johnson'
   },
   {
     id: '32',
-    date: new Date('2023-05-20'),
-    status: 'cancelled',
+    date: '2024-01-14',
     total: 69.99,
     items: [
       { id: 'item10', name: 'Denim Jacket', quantity: 1, price: 69.99 },
     ],
     userId: '9',
-<<<<<<< HEAD
-    userName: 'Bob Smith',
-=======
-    userName: 'User 9', // Added userName
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
+    userName: 'Bob Smith'
   },
   {
     id: '33',
-    date: new Date('2023-05-25'),
-    status: 'pending',
-    total: 149.97,
+    date: '2024-01-13',
+    total: 89.99,
     items: [
-      { id: 'item1', name: 'Classic T-Shirt', quantity: 3, price: 19.99 },
-      { id: 'item11', name: 'Summer Hat', quantity: 1, price: 24.99 },
       { id: 'item5', name: 'Running Shoes', quantity: 1, price: 89.99 },
     ],
     userId: '10',
-<<<<<<< HEAD
-    userName: 'Charlie Brown',
-=======
-    userName: 'User 10', // Added userName
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
-  },
+    userName: 'Charlie Brown'
+  }
 ];
 
-// Generate more transactions for the last 30 days
-for (let i = 6; i <= 30; i++) {
-  mockTransactions.push({
-    id: i.toString(),
-    date: new Date(`2023-06-${i.toString().padStart(2, '0')}`),
-    status: Math.random() > 0.8 ? 'pending' : 'completed',
-    total: Math.floor(Math.random() * 200) + 50,
-    items: [
-      { id: `item${i}`, name: 'Random Product', quantity: Math.floor(Math.random() * 3) + 1, price: Math.floor(Math.random() * 100) + 10 },
-    ],
-    userId: Math.floor(Math.random() * 4 + 2).toString(),
-    userName: `User ${Math.floor(Math.random() * 4 + 2)}`, // Add random user names
-  });
-}
-
-export const useTransactionStore = create<TransactionStore>((set) => ({
-  transactions: mockTransactions,
-  addTransaction: (transaction) =>
-    set((state) => ({ transactions: [...state.transactions, transaction] })),
-}));
+export const useTransactionStore = create(
+  persist<TransactionStore>(
+    (set, get) => ({
+      transactions: mockTransactions,
+      addTransaction: (transaction) =>
+        set((state) => ({
+          transactions: [...state.transactions, transaction],
+        })),
+      removeTransaction: (transactionId) =>
+        set((state) => ({
+          transactions: state.transactions.filter((t) => t.id !== transactionId),
+        })),
+      getTransactionsByUserId: (userId) =>
+        get().transactions.filter((t) => t.userId === userId),
+      getTransactionById: (transactionId) =>
+        get().transactions.find((t) => t.id === transactionId),
+    }),
+    {
+      name: 'transaction-storage',
+      getStorage: () => localStorage,
+    }
+  )
+);

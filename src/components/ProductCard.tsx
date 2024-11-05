@@ -59,7 +59,6 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
 
   const discountedPrice = calculateDiscountedPrice(lowestPricedVariant);
 
-<<<<<<< HEAD
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     addItem({
@@ -71,8 +70,6 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
     });
   };
 
-=======
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
   const handleCardClick = () => {
     navigate(`/product/${product.id}`);
   };

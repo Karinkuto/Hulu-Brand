@@ -10,13 +10,9 @@ import ShineBorder from "@/components/magicui/shine-border";
 import Particles from "@/components/magicui/particles";
 import { useTheme } from "@/components/theme-provider";
 import styles from "./HomePage.module.css";
-<<<<<<< HEAD
-import { useNavigate } from "react-router-dom"; // Add this import
-import { fetchProducts } from "@/stores/productStore";
-=======
 import { useNavigate } from "react-router-dom";
 import { Product } from "@/types/product";
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
+import { fetchProducts } from "@/stores/productStore";
 
 export default function HomePage() {
   const [trendingProducts, setTrendingProducts] = React.useState([]);
@@ -25,24 +21,18 @@ export default function HomePage() {
   const { theme } = useTheme();
   const navigate = useNavigate();
 
-<<<<<<< HEAD
   React.useEffect(() => {
     fetchProducts().then((fetchedProducts) => {
-      console.log(fetchedProducts);
+      const featured = fetchedProducts.filter((product: Product) => {
+        const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0);
+        return totalStock > 50 || (product.createdAt && 
+          new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000);
+      }).slice(0, 10);
 
       setTrendingProducts(fetchedProducts.slice(0, 8));
-      setFeaturedProducts(fetchedProducts);
+      setFeaturedProducts(featured);
     });
   }, []);
-=======
-  // Get featured products (new items or items with high stock)
-  const featuredProducts = products
-    .filter((product: Product) => {
-      const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0);
-      return totalStock > 50 || (product.createdAt && new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000);
-    })
-    .slice(0, 10);
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
 
   const handleShopNowClick = () => {
     navigate("/products");
@@ -83,21 +73,12 @@ export default function HomePage() {
             Trending Products
           </h2>
           <div className={styles.bentoContainer}>
-<<<<<<< HEAD
-            {trendingProducts.slice(0, 9).map((product, index) => (
-              <div
-                key={product.id}
-                className={`${styles.bentoItem} ${
-                  styles[`bentoItem${index + 1}`]
-                }`}
-              >
-                <HomepageProductCard product={product} />{" "}
-                {/* Use the new component here */}
-=======
             {trendingProducts.slice(0, 9).map((product: Product, index: number) => (
-              <div key={product.id} className={`${styles.bentoItem} ${styles[`bentoItem${index + 1}`]}`}>
+              <div 
+                key={product.id} 
+                className={`${styles.bentoItem} ${styles[`bentoItem${index + 1}`]}`}
+              >
                 <HomepageProductCard product={product} />
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
               </div>
             ))}
           </div>

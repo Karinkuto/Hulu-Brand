@@ -1,22 +1,13 @@
-<<<<<<< HEAD
 // @ts-nocheck
 import React, { useState, useEffect } from "react";
-import { useProductStore } from "../stores/productStore";
+import { useProductStore } from "@/stores/productStore";
 import { Container, Grid, Box, Pagination } from "@mui/material";
 import { ProductCard } from "@/components/ProductCard";
 import { QuickViewModal } from "@/components/QuickViewModal";
 import { Typography } from "@mui/material";
 import { fetchProducts } from "@/stores/productStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-=======
-import React, { useState, useEffect } from 'react';
-import { useProductStore } from '../stores/productStore';
-import { Container, Grid, Box, Pagination } from '@mui/material';
-import { ProductCard } from '@/components/ProductCard';
-import { QuickViewModal } from '@/components/QuickViewModal';
-import { Typography } from '@mui/material';
-import { Product } from '@/types/product'; // Make sure to import the correct Product type
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
+import { Product } from '@/types/product';
 
 export default function ProductsPage() {
   const { searchTerm, filters } = useProductStore();
@@ -102,10 +93,10 @@ export default function ProductsPage() {
           <TabsTrigger onClick={() => setCategory("Electronics")} value="electronics">Electronics</TabsTrigger>
         </TabsList>
       </Tabs>
+
       <Grid container spacing={3}>
         {paginatedProducts.map((product: Product) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
-<<<<<<< HEAD
             <ProductCard
               product={{
                 ...product,
@@ -116,11 +107,6 @@ export default function ProductsPage() {
                 })),
               }}
               onQuickView={handleQuickView}
-=======
-            <ProductCard 
-              product={product}
-              onQuickView={handleQuickView} 
->>>>>>> 79c024ba4803911fa97409be7d238505eac61268
             />
           </Grid>
         ))}
