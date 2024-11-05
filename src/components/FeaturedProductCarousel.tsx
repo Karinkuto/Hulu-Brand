@@ -142,7 +142,7 @@ export function FeaturedProductCarousel({ products }: FeaturedProductCarouselPro
                   <div className={`absolute bottom-0 left-0 right-0 p-4 ${isMobile ? '' : 'transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out'}`}>
                     <h3 className="text-white text-xl md:text-2xl font-semibold mb-1 md:mb-2 truncate">{product.name}</h3>
                     <p className="text-gray-200 text-sm md:text-base line-clamp-2 mb-2 md:mb-4">{product.description}</p>
-                    <p className="text-white text-lg font-bold mb-2">${product.variants[0].price.toFixed(2)}</p>
+                    {/* <p className="text-white text-lg font-bold mb-2">${product?.variants[0]?.price?.toFixed(2)}</p> */}
                     {!isMobile && (
                       <div className="flex justify-between items-center">
                         <Button 

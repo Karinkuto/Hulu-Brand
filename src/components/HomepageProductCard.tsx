@@ -14,7 +14,7 @@ export function HomepageProductCard({ product }: HomepageProductCardProps) {
         <img
           src={product.coverImage}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          className="w-full h-full object-none transition-transform duration-300 hover:scale-105 border border-gray-200"
         />
       </div>
     </Link>

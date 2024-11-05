@@ -1,38 +1,54 @@
 // @ts-nocheck
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useProductStore } from '../stores/productStore';
-import { useCartStore } from '../stores/cartStore';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useProductStore } from "../stores/productStore";
+import { useCartStore } from "../stores/cartStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ShoppingCart, CreditCard } from 'lucide-react';
-import { formatCurrency } from '@/utils/currencyFormatter';
-import { Container, Grid, Box, Typography, Divider } from '@mui/material';
-import { ProductCard } from '@/components/ProductCard';
+import { ArrowLeft, ShoppingCart, CreditCard } from "lucide-react";
+import { formatCurrency } from "@/utils/currencyFormatter";
+import { Container, Grid, Box, Typography, Divider } from "@mui/material";
+import { ProductCard } from "@/components/ProductCard";
+import { fetchProducts } from "@/stores/productStore";
 
 export default function ProductDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { products } = useProductStore();
-  const { addItem } = useCartStore();
-  const product = products.find(p => p.id === id);
+  const [products, setProducts] = useState([]);
+  // const { products } = useProductStore();
 
-  const [selectedVariant, setSelectedVariant] = useState(product?.variants[0]);
-  const [selectedImage, setSelectedImage] = useState(selectedVariant?.images[0] || '');
+  useEffect(() => {
+    fetchProducts().then((fetchedProducts) => {
+      setProducts(fetchedProducts);
+    });
+  }, []);
+  const { addItem } = useCartStore();
+  const product = products.find((p) => p.id === id);
+
+  const [selectedVariant, setSelectedVariant] = useState(
+    product?.variants?.[0]
+  );
+  const [selectedImage, setSelectedImage] = useState(
+    selectedVariant?.images?.[0] || ""
+  );
   const [similarProducts, setSimilarProducts] = useState([]);
 
   useEffect(() => {
-    if (product) {
-      const similar = products
-        .filter(p => p.category === product.category && p.id !== product.id)
-        .slice(0, 4);
-      setSimilarProducts(similar);
-    }
+    // if (product) {
+    //   const similar = products
+    //     .filter(p => p.category === product.category && p.id !== product.id)
+    //     .slice(0, 4);
+    //   setSimilarProducts(similar);
+    // }
   }, [product, products]);
 
   if (!product) {
-    return <Container><div className="py-8">Product not found</div></Container>;
+    return (
+      <Container>
+        <div className="py-8">Product not found</div>
+      </Container>
+    );
   }
 
   const handleAddToCart = () => {
@@ -49,12 +65,12 @@ export default function ProductDetailsPage() {
 
   const handleBuyNow = () => {
     handleAddToCart();
-    navigate('/checkout'); // Assuming you have a checkout page
+    navigate("/checkout"); // Assuming you have a checkout page
   };
 
   const calculateDiscountedPrice = (variant) => {
     if (variant.discount) {
-      return variant.discountType === 'percentage'
+      return variant.discountType === "percentage"
         ? variant.price * (1 - variant.discount / 100)
         : variant.price - variant.discount;
     }
@@ -64,29 +80,25 @@ export default function ProductDetailsPage() {
   return (
     <Container maxWidth="lg">
       <Box py={4}>
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-4"
-        >
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to products
         </Button>
 
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
-            <img 
-              src={selectedImage} 
-              alt={product.name} 
+            <img
+              src={product.coverImage}
+              alt={product.name}
               className="w-full h-auto object-cover rounded-lg"
-              style={{ aspectRatio: '1 / 1' }}
+              style={{ aspectRatio: "1 / 1" }}
             />
             <Box mt={2} display="flex" gap={2} overflow="auto">
               {selectedVariant?.images?.map((img, index) => (
-                <img 
+                <img
                   key={index}
-                  src={img} 
-                  alt={`Variant ${index + 1}`} 
+                  src={img}
+                  alt={`Variant ${index + 1}`}
                   className="w-20 h-20 object-cover rounded cursor-pointer"
                   onClick={() => setSelectedImage(img)}
                 />
@@ -94,17 +106,31 @@ export default function ProductDetailsPage() {
             </Box>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Typography variant="h4" component="h1" gutterBottom>{product.name}</Typography>
-            <Typography variant="body1" paragraph>{product.description}</Typography>
-            
-            <Divider className="my-6" /> {/* Increased margin for better spacing */}
-            
-            <Typography style={{marginBlock: '1em'}} variant="h6" gutterBottom className="mt-6">Available Variants</Typography> 
+            <Typography variant="h4" component="h1" gutterBottom>
+              {product.name}
+            </Typography>
+            <Typography variant="body1" paragraph>
+              {product.description}
+            </Typography>
+            <Divider className="my-6" />{" "}
+            {/* Increased margin for better spacing */}
+            <Typography
+              style={{ marginBlock: "1em" }}
+              variant="h6"
+              gutterBottom
+              className="mt-6"
+            >
+              Available Variants
+            </Typography>
             <Grid container spacing={2}>
-              {product.variants.map((variant, index) => (
+              {product?.variants?.map((variant, index) => (
                 <Grid item xs={12} sm={6} key={index}>
-                  <Card 
-                    className={`cursor-pointer transition-all ${selectedVariant === variant ? 'border-primary shadow-md' : 'hover:border-gray-300'}`}
+                  <Card
+                    className={`cursor-pointer transition-all ${
+                      selectedVariant === variant
+                        ? "border-primary shadow-md"
+                        : "hover:border-gray-300"
+                    }`}
                     onClick={() => {
                       setSelectedVariant(variant);
                       setSelectedImage(variant.images[0] || product.coverImage);
@@ -115,11 +141,14 @@ export default function ProductDetailsPage() {
                         <Badge variant="secondary" className="text-xs">
                           Size: {variant.size}
                         </Badge>
-                        <Badge variant="secondary" className="text-xs flex items-center">
-                          Color: 
-                          <span 
+                        <Badge
+                          variant="secondary"
+                          className="text-xs flex items-center"
+                        >
+                          Color:
+                          <span
                             className="w-3 h-3 rounded-full ml-1 inline-block"
-                            style={{backgroundColor: variant.color}}
+                            style={{ backgroundColor: variant.color }}
                           ></span>
                         </Badge>
                         <Badge variant="secondary" className="text-xs">
@@ -136,24 +165,25 @@ export default function ProductDetailsPage() {
                       </Typography>
                       {variant.discount && (
                         <Badge variant="destructive" className="mb-2">
-                          {variant.discountType === 'percentage'
+                          {variant.discountType === "percentage"
                             ? `${variant.discount}% OFF`
                             : `${formatCurrency(variant.discount)} OFF`}
                         </Badge>
                       )}
                       <Typography variant="body2">
-                        {variant.stock > 0 ? `In Stock: ${variant.stock}` : 'Out of Stock'}
+                        {variant.stock > 0
+                          ? `In Stock: ${variant.stock}`
+                          : "Out of Stock"}
                       </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
               ))}
             </Grid>
-            
             {selectedVariant && (
               <Box mt={4}>
                 <div className="flex space-x-4">
-                  <Button 
+                  <Button
                     variant="outline"
                     size="lg"
                     className="flex-1"
@@ -163,7 +193,7 @@ export default function ProductDetailsPage() {
                     <ShoppingCart className="w-4 h-4 mr-2" />
                     Add to Cart
                   </Button>
-                  <Button 
+                  <Button
                     variant="default"
                     size="lg"
                     className="flex-1"
@@ -175,7 +205,11 @@ export default function ProductDetailsPage() {
                   </Button>
                 </div>
                 {selectedVariant.stock <= 0 && (
-                  <Typography variant="body2" color="error" className="mt-2 text-center">
+                  <Typography
+                    variant="body2"
+                    color="error"
+                    className="mt-2 text-center"
+                  >
                     This variant is currently out of stock
                   </Typography>
                 )}
@@ -186,18 +220,20 @@ export default function ProductDetailsPage() {
 
         {similarProducts.length > 0 && (
           <Box mt={8}>
-            <Typography variant="h5" gutterBottom>Similar Products</Typography>
+            <Typography variant="h5" gutterBottom>
+              Similar Products
+            </Typography>
             <Grid container spacing={3}>
               {similarProducts.map((product) => (
                 <Grid item xs={12} sm={6} md={3} key={product.id}>
-                  <ProductCard 
+                  <ProductCard
                     product={{
                       ...product,
-                      image: product.coverImage,
-                      variants: product.variants.map(v => ({
+                      image: product?.coverImage,
+                      variants: product?.variants?.map((v) => ({
                         ...v,
-                        images: v.images || []
-                      }))
+                        images: v?.images || [],
+                      })),
                     }}
                   />
                 </Grid>

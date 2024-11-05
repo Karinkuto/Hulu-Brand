@@ -11,20 +11,23 @@ import Particles from "@/components/magicui/particles";
 import { useTheme } from "@/components/theme-provider";
 import styles from "./HomePage.module.css";
 import { useNavigate } from "react-router-dom"; // Add this import
+import { fetchProducts } from "@/stores/productStore";
 
 export default function HomePage() {
+  const [trendingProducts, setTrendingProducts] = React.useState([]);
+  const [featuredProducts, setFeaturedProducts] = React.useState([]);
   const { getTrendingProducts, products } = useProductStore();
-  const trendingProducts = getTrendingProducts();
   const { theme } = useTheme();
-  const navigate = useNavigate(); // Add this line
+  const navigate = useNavigate();
 
-  // Get featured products (new items or items with high stock)
-  const featuredProducts = products
-    .filter(product => {
-      const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0);
-      return totalStock > 50 || new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000;
-    })
-    .slice(0, 10);
+  React.useEffect(() => {
+    fetchProducts().then((fetchedProducts) => {
+      console.log(fetchedProducts);
+
+      setTrendingProducts(fetchedProducts.slice(0, 8));
+      setFeaturedProducts(fetchedProducts);
+    });
+  }, []);
 
   const handleShopNowClick = () => {
     navigate("/products"); // Updated to route to the products page
@@ -40,10 +43,10 @@ export default function HomePage() {
         >
           <div className={styles.heroContent}>
             <h1 className="pointer-events-none whitespace-pre-wrap bg-gradient-to-b from-black to-gray-300/80 bg-clip-text text-center text-6xl font-semibold leading-tight text-transparent dark:from-white dark:to-slate-900/10">
-              Discover Your Style
+              HuluBrand
             </h1>
             <p className="mt-4 text-xl text-gray-600 dark:text-gray-300">
-              Explore our latest collection of trendsetting fashion
+              Quality first
             </p>
             <Button size="lg" className="mt-8" onClick={handleShopNowClick}>
               Shop Now <ArrowRight className="ml-2" />
@@ -66,8 +69,14 @@ export default function HomePage() {
           </h2>
           <div className={styles.bentoContainer}>
             {trendingProducts.slice(0, 9).map((product, index) => (
-              <div key={product.id} className={`${styles.bentoItem} ${styles[`bentoItem${index + 1}`]}`}>
-                <HomepageProductCard product={product} /> {/* Use the new component here */}
+              <div
+                key={product.id}
+                className={`${styles.bentoItem} ${
+                  styles[`bentoItem${index + 1}`]
+                }`}
+              >
+                <HomepageProductCard product={product} />{" "}
+                {/* Use the new component here */}
               </div>
             ))}
           </div>

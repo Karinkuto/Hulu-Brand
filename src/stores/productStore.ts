@@ -9,7 +9,7 @@ interface Variant {
   color?: string;
   material?: string;
   discount?: number;
-  discountType?: 'percentage' | 'fixed';
+  discountType?: "percentage" | "fixed";
   images: string[];
 }
 
@@ -19,7 +19,7 @@ interface Product {
   description: string;
   coverImage: string;
   category: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   variants: Variant[];
   discountStartDate?: Date;
   discountEndDate?: Date;
@@ -43,7 +43,7 @@ interface Order {
   id: string;
   customerId: string;
   date: Date;
-  status: 'completed' | 'processing' | 'shipped' | 'cancelled';
+  status: "completed" | "processing" | "shipped" | "cancelled";
   total: number;
   items: OrderItem[];
 }
@@ -69,7 +69,14 @@ interface ProductState {
   deleteProduct: (id: string) => void;
   addSale: (productId: string, variantSku: string, quantity: number) => void;
   getTrendingProducts: () => Product[];
-  applyDiscount: (productId: string, discount: number, discountType: 'percentage' | 'fixed', discountStartDate?: Date, discountEndDate?: Date, variantSku?: string) => void;
+  applyDiscount: (
+    productId: string,
+    discount: number,
+    discountType: "percentage" | "fixed",
+    discountStartDate?: Date,
+    discountEndDate?: Date,
+    variantSku?: string
+  ) => void;
   getOrders: () => Order[];
   addOrder: (order: Order) => void;
   filters: Filters;
@@ -77,12 +84,42 @@ interface ProductState {
   resetFilters: () => void;
 }
 
+export const fetchProducts = async (): Promise<Product[]> => {
+  const response = await fetch("http://localhost:1337/api/products?populate=*", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer db771fcfc553cac5cf7372848bc167426fb5867dfc74e646651081224a41a80f5521863b170f1efa072e873022784a33ce0a6a3f6aeee01c66ea735542bc3160a8f106f7a3463ce6cdd4b5b8c9edc787671897c68924ba8e6798b52b5497d854f05ffbd6cd08e478876521a6b76106bb9016b0329d5ea764aeaa1073ddf2cca2`,
+      "Content-Type": "application/json",
+    },
+  });
+  const products = await response.json();
+  
+  return products['data'].map((p: any) => ({
+    id: p.id.toString(),
+    name: p?.name,
+    description: p.description?.[0]?.children?.[0]?.text,
+    coverImage: `http://localhost:1337/${p?.image?.[0]?.url}`,
+    category: p.category,
+    status: p.status,
+    price: p.price,
+    variants: p.variants?.data?.map((v: any) => ({
+      id: v.id.toString(),
+      size: v.size,
+      material: v.material,
+      color: v.color,
+      price: v.price,
+      quantity: v.quantity,
+    })),
+  }));
+};
+
 const dummyProducts: Product[] = [
   {
     id: "1",
     name: "Classic Cotton T-Shirt",
     description: "A comfortable and versatile t-shirt for everyday wear.",
-    coverImage: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+    coverImage:
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
     category: "tops",
     status: "active",
     variants: [
@@ -95,8 +132,8 @@ const dummyProducts: Product[] = [
         material: "Cotton",
         images: [
           "https://images.unsplash.com/photo-1581655353564-df123a1eb820?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
+          "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
       },
       {
         sku: "CT-M-BLK",
@@ -107,16 +144,17 @@ const dummyProducts: Product[] = [
         material: "Cotton",
         images: [
           "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
-      }
-    ]
+          "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
+      },
+    ],
   },
   {
     id: "2",
     name: "Slim Fit Jeans",
     description: "Modern slim fit jeans with a comfortable stretch.",
-    coverImage: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+    coverImage:
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
     category: "bottoms",
     status: "active",
     variants: [
@@ -129,8 +167,8 @@ const dummyProducts: Product[] = [
         material: "Denim",
         images: [
           "https://images.unsplash.com/photo-1582552938357-32b906df40cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
+          "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
       },
       {
         sku: "SFJ-32-BLK",
@@ -141,16 +179,17 @@ const dummyProducts: Product[] = [
         material: "Denim",
         images: [
           "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1582552938357-32b906df40cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
-      }
-    ]
+          "https://images.unsplash.com/photo-1582552938357-32b906df40cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
+      },
+    ],
   },
   {
     id: "3",
     name: "Floral Summer Dress",
     description: "A light and breezy floral dress perfect for summer days.",
-    coverImage: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+    coverImage:
+      "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
     category: "dresses",
     status: "active",
     variants: [
@@ -163,8 +202,8 @@ const dummyProducts: Product[] = [
         material: "Chiffon",
         images: [
           "https://images.unsplash.com/photo-1595777457583-95e059d581b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
+          "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
       },
       {
         sku: "FSD-M-FLR",
@@ -175,16 +214,17 @@ const dummyProducts: Product[] = [
         material: "Chiffon",
         images: [
           "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1595777457583-95e059d581b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
-      }
-    ]
+          "https://images.unsplash.com/photo-1595777457583-95e059d581b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
+      },
+    ],
   },
   {
     id: "4",
     name: "Leather Jacket",
     description: "A classic leather jacket for a timeless look.",
-    coverImage: "https://images.unsplash.com/photo-1551028719-00167b16eac5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+    coverImage:
+      "https://images.unsplash.com/photo-1551028719-00167b16eac5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
     category: "outerwear",
     status: "active",
     variants: [
@@ -197,8 +237,8 @@ const dummyProducts: Product[] = [
         material: "Leather",
         images: [
           "https://images.unsplash.com/photo-1521223890158-f9f7c3d5d504?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1559551409-dadc959f76b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
+          "https://images.unsplash.com/photo-1559551409-dadc959f76b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
       },
       {
         sku: "LJ-M-BRN",
@@ -209,16 +249,17 @@ const dummyProducts: Product[] = [
         material: "Leather",
         images: [
           "https://images.unsplash.com/photo-1559551409-dadc959f76b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1521223890158-f9f7c3d5d504?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
-      }
-    ]
+          "https://images.unsplash.com/photo-1521223890158-f9f7c3d5d504?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
+      },
+    ],
   },
   {
     id: "5",
     name: "Running Shoes",
     description: "Lightweight and comfortable shoes for your daily run.",
-    coverImage: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+    coverImage:
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
     category: "footwear",
     status: "active",
     variants: [
@@ -231,8 +272,8 @@ const dummyProducts: Product[] = [
         material: "Synthetic",
         images: [
           "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1608231387042-66d1773070a5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
+          "https://images.unsplash.com/photo-1608231387042-66d1773070a5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
       },
       {
         sku: "RS-9-BLK",
@@ -243,16 +284,17 @@ const dummyProducts: Product[] = [
         material: "Synthetic",
         images: [
           "https://images.unsplash.com/photo-1608231387042-66d1773070a5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
-      }
-    ]
+          "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
+      },
+    ],
   },
   {
     id: "6",
     name: "Polo Shirt",
     description: "Classic polo shirt for a smart casual look.",
-    coverImage: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+    coverImage:
+      "https://images.unsplash.com/photo-1581655353564-df123a1eb820?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
     category: "tops",
     status: "active",
     variants: [
@@ -265,16 +307,17 @@ const dummyProducts: Product[] = [
         material: "Cotton",
         images: [
           "https://images.unsplash.com/photo-1581655353564-df123a1eb820?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
-      }
-    ]
+          "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
+      },
+    ],
   },
   {
     id: "7",
     name: "Cargo Pants",
     description: "Durable cargo pants with multiple pockets.",
-    coverImage: "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+    coverImage:
+      "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
     category: "bottoms",
     status: "active",
     variants: [
@@ -287,16 +330,17 @@ const dummyProducts: Product[] = [
         material: "Cotton",
         images: [
           "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-          "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80"
-        ]
-      }
-    ]
+          "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+        ],
+      },
+    ],
   },
   {
     id: "8",
     name: "Wool Sweater",
     description: "Warm and cozy wool sweater for cold days.",
-    coverImage: "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+    coverImage:
+      "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
     category: "tops",
     status: "active",
     variants: [
@@ -309,15 +353,16 @@ const dummyProducts: Product[] = [
         material: "Wool",
         images: [
           "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-        ]
-      }
-    ]
+        ],
+      },
+    ],
   },
   {
     id: "9",
     name: "Silk Scarf",
     description: "Elegant silk scarf to complement any outfit.",
-    coverImage: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+    coverImage:
+      "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
     category: "accessories",
     status: "active",
     variants: [
@@ -330,15 +375,16 @@ const dummyProducts: Product[] = [
         material: "Silk",
         images: [
           "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-        ]
-      }
-    ]
+        ],
+      },
+    ],
   },
   {
     id: "10",
     name: "Denim Jacket",
     description: "Classic denim jacket for a casual look.",
-    coverImage: "https://images.unsplash.com/photo-1544642899-f0d6e5f6ed6f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+    coverImage:
+      "https://images.unsplash.com/photo-1544642899-f0d6e5f6ed6f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
     category: "outerwear",
     status: "active",
     variants: [
@@ -351,15 +397,16 @@ const dummyProducts: Product[] = [
         material: "Denim",
         images: [
           "https://images.unsplash.com/photo-1544642899-f0d6e5f6ed6f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-        ]
-      }
-    ]
+        ],
+      },
+    ],
   },
   {
     id: "11",
     name: "Summer Hat",
     description: "Stylish summer hat for sun protection.",
-    coverImage: "https://images.unsplash.com/photo-1582791694770-cbdc9dda338f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
+    coverImage:
+      "https://images.unsplash.com/photo-1582791694770-cbdc9dda338f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
     category: "accessories",
     status: "inactive", // Inactive product scenario
     variants: [
@@ -372,9 +419,9 @@ const dummyProducts: Product[] = [
         material: "Straw",
         images: [
           "https://images.unsplash.com/photo-1582791694770-cbdc9dda338f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&h=500&q=80",
-        ]
-      }
-    ]
+        ],
+      },
+    ],
   },
 ];
 
@@ -387,8 +434,8 @@ const dummyOrders: Order[] = [
     total: 89.97,
     items: [
       { productId: "1", variantSku: "CT-S-WHT", quantity: 2, price: 19.99 },
-      { productId: "2", variantSku: "SFJ-30-BLU", quantity: 1, price: 49.99 }
-    ]
+      { productId: "2", variantSku: "SFJ-30-BLU", quantity: 1, price: 49.99 },
+    ],
   },
   {
     id: "ORD-002",
@@ -397,8 +444,8 @@ const dummyOrders: Order[] = [
     status: "processing",
     total: 199.99,
     items: [
-      { productId: "4", variantSku: "LJ-S-BLK", quantity: 1, price: 199.99 }
-    ]
+      { productId: "4", variantSku: "LJ-S-BLK", quantity: 1, price: 199.99 },
+    ],
   },
   {
     id: "ORD-003",
@@ -408,8 +455,8 @@ const dummyOrders: Order[] = [
     total: 129.97,
     items: [
       { productId: "3", variantSku: "FSD-S-FLR", quantity: 1, price: 39.99 },
-      { productId: "5", variantSku: "RS-8-GRY", quantity: 1, price: 89.98 }
-    ]
+      { productId: "5", variantSku: "RS-8-GRY", quantity: 1, price: 89.98 },
+    ],
   },
   {
     id: "ORD-004",
@@ -419,8 +466,8 @@ const dummyOrders: Order[] = [
     total: 109.98,
     items: [
       { productId: "8", variantSku: "WS-L-GRY", quantity: 1, price: 79.99 },
-      { productId: "9", variantSku: "SS-OS-RED", quantity: 1, price: 29.99 }
-    ]
+      { productId: "9", variantSku: "SS-OS-RED", quantity: 1, price: 29.99 },
+    ],
   },
   {
     id: "ORD-005",
@@ -429,8 +476,8 @@ const dummyOrders: Order[] = [
     status: "cancelled",
     total: 69.99,
     items: [
-      { productId: "10", variantSku: "DJ-M-BLU", quantity: 1, price: 69.99 }
-    ]
+      { productId: "10", variantSku: "DJ-M-BLU", quantity: 1, price: 69.99 },
+    ],
   },
 ];
 
@@ -443,7 +490,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   trendingProducts: initialProducts.slice(0, 4),
   sales: [],
   orders: initialOrders,
-  searchTerm: '',
+  searchTerm: "",
   setSearchTerm: (term) => set({ searchTerm: term }),
   addProduct: (product) => {
     console.log("Adding product:", product);
@@ -506,12 +553,17 @@ export const useProductStore = create<ProductState>((set, get) => ({
         .filter(Boolean);
     } else {
       // If no sales data, return a random selection of products
-      return state.products
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 8);
+      return state.products.sort(() => 0.5 - Math.random()).slice(0, 8);
     }
   },
-  applyDiscount: (productId, discount, discountType, discountStartDate, discountEndDate, variantSku) => {
+  applyDiscount: (
+    productId,
+    discount,
+    discountType,
+    discountStartDate,
+    discountEndDate,
+    variantSku
+  ) => {
     set((state) => ({
       products: state.products.map((product) =>
         product.id === productId
@@ -531,7 +583,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }));
   },
   getOrders: () => get().orders,
-  addOrder: (order: Order) => set(state => ({ orders: [...state.orders, order] })),
+  addOrder: (order: Order) =>
+    set((state) => ({ orders: [...state.orders, order] })),
   filters: {
     categories: [],
     colors: [],
@@ -540,5 +593,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
     priceRange: [null, null],
   },
   setFilters: (filters) => set({ filters }),
-  resetFilters: () => set({ filters: { categories: [], colors: [], sizes: [], materials: [], priceRange: [null, null] } }),
+  resetFilters: () =>
+    set({
+      filters: {
+        categories: [],
+        colors: [],
+        sizes: [],
+        materials: [],
+        priceRange: [null, null],
+      },
+    }),
 }));
