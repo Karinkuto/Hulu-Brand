@@ -15,23 +15,27 @@ import { Product } from "@/types/product";
 import { fetchProducts } from "@/stores/productStore";
 
 export default function HomePage() {
-  const [trendingProducts, setTrendingProducts] = React.useState([]);
-  const [featuredProducts, setFeaturedProducts] = React.useState([]);
-  const { getTrendingProducts, products } = useProductStore();
+  const [trendingProducts, setTrendingProducts] = React.useState<Product[]>([]);
+  const [featuredProducts, setFeaturedProducts] = React.useState<Product[]>([]);
+  const { getTrendingProducts } = useProductStore();
   const { theme } = useTheme();
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    fetchProducts().then((fetchedProducts) => {
-      const featured = fetchedProducts.filter((product: Product) => {
-        const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0);
-        return totalStock > 50 || (product.createdAt && 
-          new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000);
-      }).slice(0, 10);
+    const loadProducts = async () => {
+      try {
+        const products = await fetchProducts();
+        if (products) {
+          const featured = products.filter((product: Product) => product.featured).slice(0, 10);
+          setTrendingProducts(products.slice(0, 8));
+          setFeaturedProducts(featured);
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    };
 
-      setTrendingProducts(fetchedProducts.slice(0, 8));
-      setFeaturedProducts(featured);
-    });
+    loadProducts();
   }, []);
 
   const handleShopNowClick = () => {

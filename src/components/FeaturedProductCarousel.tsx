@@ -31,9 +31,11 @@ export function FeaturedProductCarousel({ products }: FeaturedProductCarouselPro
 
   useEffect(() => {
     window.addEventListener('resize', handleResize);
-    setLoopedProducts([...products, ...products, ...products, ...products]);
+    if (isMobile) {
+      setLoopedProducts([...products, ...products, ...products, ...products]);
+    }
     return () => window.removeEventListener('resize', handleResize);
-  }, [handleResize, products]);
+  }, [handleResize, products, isMobile]);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -87,10 +89,17 @@ export function FeaturedProductCarousel({ products }: FeaturedProductCarouselPro
   } : {
     effect: 'fade',
     modules: [Autoplay, Navigation, Pagination, EffectFade],
-    className: "featured-carousel rounded-lg overflow-hidden", // Add rounded corners here
+    className: "featured-carousel rounded-lg overflow-hidden",
     spaceBetween: 30,
     navigation: true,
     pagination: { clickable: true },
+    loop: true,
+    speed: 800,
+    autoplay: {
+      delay: 3000,
+      disableOnInteraction: false,
+      pauseOnMouseEnter: true,
+    },
   };
 
   return (
@@ -105,10 +114,6 @@ export function FeaturedProductCarousel({ products }: FeaturedProductCarouselPro
           grabCursor={true}
           slidesPerView={1}
           initialSlide={isMobile ? products.length : 0}
-          autoplay={{
-            delay: 3000,
-            disableOnInteraction: false,
-          }}
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
           }}

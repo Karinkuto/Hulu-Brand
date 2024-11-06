@@ -8,7 +8,7 @@ export interface Product {
   status: "active" | "inactive";
   variants: ProductVariant[];
   basePrice: number;
-  featured?: boolean;
+  featured: boolean;
   brand?: string;
   slug?: string;
 }

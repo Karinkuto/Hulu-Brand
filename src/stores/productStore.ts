@@ -67,7 +67,7 @@ interface ProductState {
   isLoading: boolean;
   error: string | null;
   setSearchTerm: (term: string) => void;
-  fetchProducts: () => Promise<void>;
+  fetchProducts: () => Promise<Product[]>;
   fetchOrders: () => Promise<void>;
   addProduct: (product: Product) => Promise<void>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
@@ -80,7 +80,7 @@ interface ProductState {
     discountType: "percentage" | "fixed",
     discountStartDate?: Date,
     discountEndDate?: Date,
-    variantSku?: string
+    _variantSku?: string
   ) => Promise<void>;
   getOrders: () => Order[];
   addOrder: (order: Order) => Promise<void>;
@@ -112,9 +112,16 @@ interface StrapiProduct {
       thumbnail: { url: string };
       small: { url: string };
       medium: { url: string };
-        };
-      }>;
-  variants: any[]; // Update this if you have a specific variant structure
+    };
+  }>;
+  variants: Array<{
+    id: number;
+    size: string;
+    material: string;
+    color: string;
+    price: number;
+    quantity: number;
+  }>;
 }
 
 interface StrapiVariant {
@@ -166,11 +173,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
         description: p.description?.[0]?.children?.[0]?.text || '',
         coverImage: p.images?.[0]?.url 
           ? `${import.meta.env.VITE_STRAPI_MEDIA_URL}${p.images[0].url}`
-            : "/placeholder-image.jpg",
+          : "/placeholder-image.jpg",
         images: p.images?.slice(1).map(img => img.url) || [],
         category: p.category,
         status: 'active',
         basePrice: p.basePrice || 0,
+        featured: p.featured || false,
         variants: p.variants?.map(v => ({
           sku: v.id?.toString() || '',
           size: v.size || '',
@@ -195,9 +203,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
         featuredProducts: products.filter(p => p.featured).slice(0, 4),
         isLoading: false 
       });
+      
+      return products;
     } catch (error) {
       console.error('Error fetching products:', error);
       set({ error: (error as Error).message, isLoading: false });
+      return [];
     }
   },
 
@@ -354,7 +365,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     discountType,
     discountStartDate,
     discountEndDate,
-    variantSku
+    _variantSku
   ) => {
     set({ isLoading: true, error: null });
     try {
