@@ -161,7 +161,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
       );
 
       if (!response.ok) {
-        console.error('Response status:', response.status);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
@@ -196,8 +195,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
         }],
       }));
 
-      console.log('Processed products:', products);
-
       set({ 
         products,
         featuredProducts: products.filter(p => p.featured).slice(0, 4),
@@ -206,7 +203,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
       
       return products;
     } catch (error) {
-      console.error('Error fetching products:', error);
       set({ error: (error as Error).message, isLoading: false });
       return [];
     }

@@ -10,8 +10,6 @@ export function Cart() {
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  console.log('Cart items:', items);
-
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-semibold mb-4">Your Cart</h1>
