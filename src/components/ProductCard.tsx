@@ -15,105 +15,58 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onQuickView }: ProductCardProps) {
-  const { addItem } = useCartStore();
   const navigate = useNavigate();
 
-  const calculateDiscountedPrice = (variant) => {
-    if (variant?.discount) {
-      return variant?.discountType === "percentage"
-        ? variant.price * (1 - variant.discount / 100)
-        : variant.price - variant.discount;
+  const lowestPrice = product.variants && product.variants.length > 0
+    ? product.variants.reduce((min, variant) => 
+        Math.min(min, variant.price), Infinity)
+    : product.price || 0;
+
+  const handleClick = () => {
+    if (product?.id) {
+      navigate(`/product/${product.id}`);
     }
-    return variant?.price;
-  };
-
-  const formatDiscount = (variant) => {
-    if (!variant.discount) return "No discount";
-    return variant.discountType === "percentage"
-      ? `${variant.discount}% off`
-      : `${formatCurrency(variant.discount)} off`;
-  };
-
-  const lowestPricedVariant = product?.variants?.reduce((min, variant) =>
-    variant?.price < min?.price ? variant : min
-  );
-
-  const discountedVariants = product?.variants?.filter((v) => v?.discount);
-  const hasMultipleDiscounts = discountedVariants?.length > 1;
-
-  const highestDiscount = discountedVariants?.reduce((max, v) => {
-    const discountAmount =
-      v.discountType === "percentage"
-        ? v.price * (v.discount / 100)
-        : v.discount;
-    return discountAmount > max ? discountAmount : max;
-  }, 0);
-
-  const lowestDiscountedPrice = discountedVariants?.reduce(
-    (min: number, v: any) => {
-      const discountedPrice = calculateDiscountedPrice(v);
-      return discountedPrice < min ? discountedPrice : min;
-    },
-    Infinity
-  );
-
-  const discountedPrice = calculateDiscountedPrice(lowestPricedVariant);
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: discountedPrice,
-      quantity: 1,
-      imageUrl: product.image,
-    });
-  };
-
-  const handleCardClick = () => {
-    navigate(`/product/${product.id}`);
   };
 
   return (
-    <Card
-      className="h-full flex flex-col cursor-pointer transition-shadow duration-300 ease-in-out hover:shadow-lg"
-      onClick={handleCardClick}
-    >
-      <CardContent className="p-3 flex flex-col flex-grow">
-        <div className="relative mb-4 w-full h-52">
-          <img
-            src={product.coverImage}
-            alt={product.name}
-            className="w-full h-full object-cover rounded-md"
-          />
-          {hasMultipleDiscounts ? (
-            <div className="absolute top-2 right-2 bg-red-500 text-white px-1 py-0.5 rounded-full text-xs font-bold">
-              Up to {formatCurrency(highestDiscount)} OFF
-            </div>
-          ) : (
-            discountedVariants?.length === 1 && (
-              <div className="absolute top-2 right-2 bg-red-500 text-white px-1 py-0.5 rounded-full text-xs font-bold">
-                {formatDiscount(discountedVariants[0])}
-              </div>
-            )
-          )}
-        </div>
-        <h3 className="font-semibold text-sm mb-2">{product.name}</h3>
-        <div className="mt-auto">
-          <div className="flex justify-between items-center mb-2">
-            <p className="font-bold text-base">
-              {formatCurrency(product?.price)}
-            </p>
+    <Card className="group relative overflow-hidden rounded-lg transition-all hover:shadow-lg">
+      <CardContent className="p-0">
+        <div 
+          className="cursor-pointer"
+          onClick={handleClick}
+        >
+          <div className="relative aspect-square overflow-hidden">
+            <img
+              src={product?.coverImage || '/placeholder-image.jpg'}
+              alt={product?.name || 'Product'}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={(e) => {
+                e.currentTarget.src = '/placeholder-image.jpg';
+                e.currentTarget.alt = 'Product image not available';
+              }}
+            />
           </div>
-          <div className="flex space-x-2">
-            {product.variants && product.variants.length > 1 ? (
-              <div className="flex items-center">
-                <Info className="w-4 h-4 mr-1 text-gray-400" />
-                <p className="text-gray-400 text-xs">
-                  This product has variants.
-                </p>
-              </div>
-            ) : null}
+          <div className="p-4">
+            <h3 className="text-lg font-semibold">{product?.name || 'Unnamed Product'}</h3>
+            <p className="text-sm text-gray-500 line-clamp-2">
+              {product?.description || 'No description available'}
+            </p>
+            <div className="mt-2 flex items-center justify-between">
+              <span className="text-lg font-bold">
+                {formatCurrency(lowestPrice)}
+              </span>
+              {onQuickView && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onQuickView(product);
+                  }}
+                  className="rounded-full p-2 hover:bg-gray-100"
+                >
+                  <Info className="h-5 w-5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>

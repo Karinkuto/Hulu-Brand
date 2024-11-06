@@ -85,32 +85,46 @@ interface ProductState {
 }
 
 export const fetchProducts = async (): Promise<Product[]> => {
-  const response = await fetch("http://localhost:1337/api/products?populate=*", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer db771fcfc553cac5cf7372848bc167426fb5867dfc74e646651081224a41a80f5521863b170f1efa072e873022784a33ce0a6a3f6aeee01c66ea735542bc3160a8f106f7a3463ce6cdd4b5b8c9edc787671897c68924ba8e6798b52b5497d854f05ffbd6cd08e478876521a6b76106bb9016b0329d5ea764aeaa1073ddf2cca2`,
-      "Content-Type": "application/json",
-    },
-  });
-  const products = await response.json();
-  
-  return products['data'].map((p: any) => ({
-    id: p.id.toString(),
-    name: p?.name,
-    description: p.description?.[0]?.children?.[0]?.text,
-    coverImage: `http://localhost:1337/${p?.image?.[0]?.url}`,
-    category: p.category,
-    status: p.status,
-    price: p.price,
-    variants: p.variants?.data?.map((v: any) => ({
-      id: v.id.toString(),
-      size: v.size,
-      material: v.material,
-      color: v.color,
-      price: v.price,
-      quantity: v.quantity,
-    })),
-  }));
+  try {
+    const response = await fetch("http://localhost:1337/api/products?populate=*", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer fee04e7eb895c337e8ddac8ba44c4ba14896230f5b745f88dfa2176b26fd88ddd61da8fe1035905c14e09706246a4793097ea176a772e1e1872606265220ab6fe90dcc251567e571b1da7b3cf9df1cefe5fd69282a3f08ff1f03c03fab7b81a22cde5c7542fa9de7d642511f1fceaaa9b38af2639ffeb9b86114d92340e80366`,
+        "Content-Type": "application/json",
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const products = await response.json();
+    
+    if (!products.data) {
+      return [];
+    }
+    
+    return products.data.map((p: any) => ({
+      id: p.id.toString(),
+      name: p?.name,
+      description: p.description?.[0]?.children?.[0]?.text,
+      coverImage: `http://localhost:1337/${p?.image?.[0]?.url}`,
+      category: p.category,
+      status: p.status,
+      price: p.price,
+      variants: p.variants?.data?.map((v: any) => ({
+        id: v.id.toString(),
+        size: v.size,
+        material: v.material,
+        color: v.color,
+        price: v.price,
+        quantity: v.quantity,
+      })) || [],
+    }));
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
 };
 
 const dummyProducts: Product[] = [
