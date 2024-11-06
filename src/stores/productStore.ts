@@ -23,6 +23,7 @@ interface Product {
   discountStartDate?: Date;
   discountEndDate?: Date;
   basePrice: number;
+  images: string[];
 }
 
 interface Sale {
@@ -166,19 +167,19 @@ export const useProductStore = create<ProductState>((set, get) => ({
         coverImage: p.images?.[0]?.url 
           ? `${import.meta.env.VITE_STRAPI_MEDIA_URL}${p.images[0].url}`
             : "/placeholder-image.jpg",
+        images: p.images?.slice(1).map(img => img.url) || [],
         category: p.category,
-        status: 'active', // You might want to add a status field in Strapi
+        status: 'active',
         basePrice: p.basePrice || 0,
         variants: p.variants?.map(v => ({
-                sku: v.id?.toString() || '',
+          sku: v.id?.toString() || '',
           size: v.size || '',
           material: v.material || '',
           color: v.color || '',
-          price: v.price || p.basePrice, // Fallback to basePrice if no variant price
+          price: v.price || p.basePrice,
           stock: v.quantity || 0,
-                images: [],
+          images: [],
         })) || [{
-          // Default variant if no variants exist
           sku: p.id.toString(),
           size: 'Default',
           price: p.basePrice,

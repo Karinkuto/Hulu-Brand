@@ -20,10 +20,17 @@ export default function ProductDetailsPage() {
   const [selectedVariant, setSelectedVariant] = useState(
     product?.variants?.[0] || null
   );
+  const [selectedImage, setSelectedImage] = useState<string>('');
 
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    if (product?.coverImage) {
+      setSelectedImage(product.coverImage);
+    }
+  }, [product]);
 
   useEffect(() => {
     if (product?.variants?.[0]) {
@@ -93,19 +100,49 @@ export default function ProductDetailsPage() {
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
             <img
-              src={product.coverImage}
+              src={selectedImage || product.coverImage}
               alt={product.name}
               className="w-full h-auto object-cover rounded-lg"
               style={{ aspectRatio: "1 / 1" }}
             />
-            {selectedVariant?.images?.length > 0 && (
-              <Box mt={2} display="flex" gap={2} overflow="auto">
-                {selectedVariant.images.map((img, index) => (
+            
+            {product.images && product.images.length > 0 && (
+              <Box mt={2} display="flex" gap={2} overflow="auto" className="pb-2">
+                <img
+                  src={product.coverImage}
+                  alt={`${product.name} cover`}
+                  className={`w-20 h-20 object-cover rounded cursor-pointer border-2 ${
+                    selectedImage === product.coverImage ? 'border-primary' : 'border-transparent'
+                  }`}
+                  onClick={() => setSelectedImage(product.coverImage)}
+                />
+                {product.images.map((img, index) => (
                   <img
                     key={index}
+                    src={`${import.meta.env.VITE_STRAPI_MEDIA_URL}${img}`}
+                    alt={`${product.name} ${index + 1}`}
+                    className={`w-20 h-20 object-cover rounded cursor-pointer border-2 ${
+                      selectedImage === `${import.meta.env.VITE_STRAPI_MEDIA_URL}${img}` 
+                        ? 'border-primary' 
+                        : 'border-transparent'
+                    }`}
+                    onClick={() => setSelectedImage(`${import.meta.env.VITE_STRAPI_MEDIA_URL}${img}`)}
+                  />
+                ))}
+              </Box>
+            )}
+
+            {selectedVariant?.images?.length > 0 && (
+              <Box mt={2} display="flex" gap={2} overflow="auto" className="pb-2">
+                {selectedVariant.images.map((img, index) => (
+                  <img
+                    key={`variant-${index}`}
                     src={img}
                     alt={`Variant ${index + 1}`}
-                    className="w-20 h-20 object-cover rounded cursor-pointer"
+                    className={`w-20 h-20 object-cover rounded cursor-pointer border-2 ${
+                      selectedImage === img ? 'border-primary' : 'border-transparent'
+                    }`}
+                    onClick={() => setSelectedImage(img)}
                   />
                 ))}
               </Box>

@@ -3,6 +3,7 @@ export interface Product {
   name: string;
   description: string;
   coverImage: string;
+  images: string[];
   category: string;
   status: "active" | "inactive";
   variants: ProductVariant[];
