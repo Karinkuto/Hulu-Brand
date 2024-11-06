@@ -22,6 +22,7 @@ interface Product {
   variants: Variant[];
   discountStartDate?: Date;
   discountEndDate?: Date;
+  basePrice: number;
 }
 
 interface Sale {
@@ -167,6 +168,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
             : "/placeholder-image.jpg",
         category: p.category,
         status: 'active', // You might want to add a status field in Strapi
+        basePrice: p.basePrice || 0,
         variants: p.variants?.map(v => ({
                 sku: v.id?.toString() || '',
           size: v.size || '',

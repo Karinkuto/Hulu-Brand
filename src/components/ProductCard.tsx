@@ -15,9 +15,9 @@ interface ProductCardProps {
 export function ProductCard({ product, onQuickView }: ProductCardProps) {
   const navigate = useNavigate();
 
-  const lowestPrice = product.variants && product.variants.length > 0
+  const price = product.variants && product.variants.length > 0
     ? Math.min(...product.variants.map(variant => variant.price))
-    : 0;
+    : product.basePrice || 0;
 
   const handleClick = () => {
     navigate(`/product/${product.id}`);
@@ -48,7 +48,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
             </p>
             <div className="mt-2 flex items-center justify-between">
               <span className="text-lg font-bold">
-                {formatCurrency(lowestPrice)}
+                {formatCurrency(price)}
               </span>
               {onQuickView && (
                 <button

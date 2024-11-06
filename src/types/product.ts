@@ -6,6 +6,7 @@ export interface Product {
   category: string;
   status: "active" | "inactive";
   variants: ProductVariant[];
+  basePrice: number;
   featured?: boolean;
   brand?: string;
   slug?: string;
