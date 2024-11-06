@@ -40,10 +40,12 @@ export function FeaturedProductCarousel({ products }: FeaturedProductCarouselPro
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    const price = product.variants?.[0]?.price || product.basePrice;
+    
     addItem({
-      id: product.id,
+      id: `${product.id}`,  // Ensure id is a string
       name: product.name,
-      price: product.variants[0].price,
+      price: price,
       quantity: 1,
       imageUrl: product.coverImage
     });

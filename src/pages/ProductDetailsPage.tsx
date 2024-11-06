@@ -35,17 +35,29 @@ export default function ProductDetailsPage() {
   useEffect(() => {
     if (product?.variants?.[0]) {
       setSelectedVariant(product.variants[0]);
+    } else if (product) {
+      // If no variants exist, create a default variant from the product
+      setSelectedVariant({
+        sku: product.id,
+        size: 'Default',
+        stock: 1,
+        price: product.basePrice,
+        images: [product.coverImage]
+      });
     }
   }, [product]);
 
   const handleAddToCart = () => {
-    if (selectedVariant && product) {
+    if (product) {
+      const price = selectedVariant?.price || product.basePrice;
+      const variantSku = selectedVariant?.sku || product.id;
+      
       addItem({
-        id: `${product.id}-${selectedVariant.sku}`,
+        id: `${product.id}-${variantSku}`,
         name: product.name,
-        price: selectedVariant.price || product.basePrice,
+        price: price,
         quantity: 1,
-        imageUrl: selectedVariant.images[0] || product.coverImage,
+        imageUrl: selectedVariant?.images?.[0] || product.coverImage,
       });
     }
   };
@@ -227,7 +239,7 @@ export default function ProductDetailsPage() {
                   size="lg"
                   className="flex-1"
                   onClick={handleAddToCart}
-                  disabled={selectedVariant?.stock <= 0}
+                  disabled={!product}
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
                   Add to Cart
@@ -237,7 +249,7 @@ export default function ProductDetailsPage() {
                   size="lg"
                   className="flex-1"
                   onClick={handleBuyNow}
-                  disabled={selectedVariant?.stock <= 0}
+                  disabled={!product}
                 >
                   <CreditCard className="w-4 h-4 mr-2" />
                   Buy Now
