@@ -1,12 +1,10 @@
-// @ts-nocheck
 // src/components/ProductCard.tsx
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Product, ProductVariant } from "../types/product";
-import { Card, CardContent } from "@/components/ui/card";
-import { useCartStore } from "../stores/cartStore";
-import { formatCurrency } from "@/utils/currencyFormatter";
+import { Product } from "../types/product";
+import { Card, CardContent } from "../components/ui/card";
+import { formatCurrency } from "../utils/currencyFormatter";
 import { Info } from "lucide-react";
 
 interface ProductCardProps {
@@ -18,14 +16,11 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
   const navigate = useNavigate();
 
   const lowestPrice = product.variants && product.variants.length > 0
-    ? product.variants.reduce((min, variant) => 
-        Math.min(min, variant.price), Infinity)
-    : product.price || 0;
+    ? Math.min(...product.variants.map(variant => variant.price))
+    : 0;
 
   const handleClick = () => {
-    if (product?.id) {
-      navigate(`/product/${product.id}`);
-    }
+    navigate(`/product/${product.id}`);
   };
 
   return (

@@ -4,9 +4,11 @@ export interface Product {
   description: string;
   coverImage: string;
   category: string;
+  status: "active" | "inactive";
   variants: ProductVariant[];
-  createdAt: Date;
-  // ... other properties
+  featured?: boolean;
+  brand?: string;
+  slug?: string;
 }
 
 export interface ProductVariant {
@@ -17,9 +19,6 @@ export interface ProductVariant {
   color?: string;
   material?: string;
   images: string[];
-  discount?: number;
-  discountType?: 'percentage' | 'fixed';
-  // ... other properties
 }
 
 // ... any other types or interfaces
